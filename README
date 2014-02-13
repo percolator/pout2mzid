@@ -1,0 +1,30 @@
+Pout2mziml
+
+This software adds the calculated values from percolator, that are stored
+in the percolator output file, and adds this information to a mzIdentML
+file. The software either outputs the new mzIdentMl file to standard output
+or to a file of your choosing.
+Decoy status flag filters the data.
+
+***
+
+BUILDING (from source bundle)
+
+*** READ THIS CAREFULLY: you MUST install the required libraries! ***
+The following instructions are for Ubuntu (versions 10.04, 10.10 and 11.04).
+Make, Cmake and a C++ compiler are required. To build pout2mziml, the following
+libraries are also needed:  libboost-dev, libboost-filesystem-dev and libboost-system-dev. 
+
+In order to build just run...
+cd [binary dir]
+cmake [binary dir]/CMakeLists.txt
+make
+
+***
+
+FILES
+
+XMLIO.h file contains constants for all XML path, values and attributes
+that are used within the software.
+For future upgrade or XML format change, these constants can be changed, which
+will change all values within the software.
