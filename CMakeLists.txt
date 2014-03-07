@@ -10,12 +10,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(POUT2MZIML_VERSION_MAJOR "0")
 set(POUT2MZIML_VERSION_MINOR "2")
-set(POUT2MZIML_VERSION_PATCH "1")
+set(POUT2MZIML_VERSION_PATCH "3")
 
 configure_file( version_config.h.in ${CMAKE_BINARY_DIR}/version_config.h )
 
 ###############################################################################
-# Check for Boost installation
+# Check for Dependencies
 ###############################################################################
 
 # INCLUDE HEADER FILES IN SRC DIRECTORY
@@ -62,7 +62,7 @@ set(percolator_out_xsd ${CMAKE_CURRENT_SOURCE_DIR}/xml/percolator_out.xsd)
 add_custom_command(
   OUTPUT ${percolator_out}
   COMMAND xsdcxx
-  ARGS cxx-tree --generate-serialization --root-element-all --generate-ostream --namespace-map http://per-colator.com/percolator_out/14=poutXML ${percolator_out_xsd}
+  ARGS cxx-tree --generate-polymorphic --generate-serialization --root-element-all --generate-ostream --namespace-map http://per-colator.com/percolator_out/14=poutXML ${percolator_out_xsd}
   DEPENDS ${percolator_out_xsd}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -73,7 +73,7 @@ set(mzidentml_xsd ${CMAKE_CURRENT_SOURCE_DIR}/xml/mzIdentML1.1.0.xsd)
 add_custom_command(
   OUTPUT ${mzidentml_out}
   COMMAND xsdcxx
-  ARGS cxx-tree --generate-serialization --root-element-all --generate-ostream --namespace-map http://psidev.info/psi/pi/mzIdentML/1.1=mzidXML ${mzidentml_xsd}
+  ARGS cxx-tree --generate-polymorphic --generate-serialization --root-element-all --generate-ostream --namespace-map http://psidev.info/psi/pi/mzIdentML/1.1=mzidXML ${mzidentml_xsd}
   DEPENDS ${mzidentml_xsd}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )

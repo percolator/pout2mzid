@@ -34,40 +34,20 @@
 //------------------------------------------------------------------------------
 using namespace std;
 //------------------------------------------------------------------------------
-class XMLIO {
-  public:
-  XMLIO();
-  bool setFilename(string filename);
-  void setOutputFilename(string filename);
-  void setDecoy();
-  bool getPoutValues(boost::unordered_map<pair<string, int>, double> &pout_values, bool writemsg);
-  bool insertMZIDValues(boost::unordered_map<pair<string, int>, double> pout_values);
-  bool saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid);
-  static string convertPSMID(string percolatorid);
-  bool checkDecoy(string decoyattribute);
-  bool FileOutput();
-  ~XMLIO();
-
-  private:
-  string filename;
-  string outputfilename;
-  bool decoy;
-  };
-//------------------------------------------------------------------------------
 // Namespaces containing parameters for mzID and percolator out files
 // in case future version of MZID, and percolator out parameters change
 //------------------------------------------------------------------------------
 namespace MZID_PARAM {
-  const int USERPARAM=0;
-  const int CVPARAM=1;
   const char SCHEMA_NAME[]="http://psidev.info/psi/pi/mzIdentML/1.1";
   const char SCHEMA[]="mzIdentML1.1.0.xsd";
+  const char FILE_END_DEFAULT[]="_output";
+  const char FILE_EXTENSION[]=".mzid";
+  enum ELEMENT_TYPE { USERPARAM,CVPARAM };
 
-  const int ELEMENTS[]={
-    USERPARAM,CVPARAM,CVPARAM,CVPARAM,USERPARAM
-    };
-
-  namespace ATTRIBUTES {
+  namespace ELEMENT_DATA {
+    const int ELEMENTS[]={
+      USERPARAM,CVPARAM,CVPARAM,CVPARAM,USERPARAM
+      };
     const string ACCESSIONS[]={
       "","MS:1002054","MS:1002056","MS:1002055",""
       };
@@ -82,13 +62,67 @@ namespace MZID_PARAM {
 //------------------------------------------------------------------------------
 namespace PERCOLATOR_PARAM {
   const int N_DELIMINATOR_PSM_ID=3;
-  namespace VALUES {
-    const int SVM_SCORE=0;
-    const int Q_VALUE=1;
-    const int PEP=2;
-    const int PEPTIDE_Q_VALUE=3;
-    const int PEPTIDE_PEP=4;
-    }
+  const char PSMID_START[]="_SII";
+  enum VALUES { SVM_SCORE,Q_VALUE,PEP,PEPTIDE_Q_VALUE,PEPTIDE_PEP };
   }
+//------------------------------------------------------------------------------
+class PercolatorOutFeatures {
+  public:
+  string filename;
+  string psmid;
+  int parameter;
+
+  PercolatorOutFeatures();
+  PercolatorOutFeatures(string filename, string psmid, int parameter);
+  bool operator==(PercolatorOutFeatures const& p) const;
+  size_t operator()(PercolatorOutFeatures const& p) const;
+  };
+//------------------------------------------------------------------------------
+class XMLIO {
+  protected:
+  long validatexml;
+
+  public:
+  XMLIO();
+
+  void unsetValidation();
+  };
+//------------------------------------------------------------------------------
+class MzIDIO : public XMLIO {
+  private:
+  vector<string> filename;
+  string outputfileending;
+  bool warning;
+
+  public:
+  MzIDIO();
+  void setOutputFileEnding(string fileending);
+  void unsetWarningFlag();
+  void setFilename(string filename);
+  bool addFilenames(string filenamefile);
+  bool checkFilenames();
+  string getUniqueFilename();
+  bool FileOutput();
+  string setOutputFileName(int mzidfilenameid);
+  bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values);
+  bool saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid, int mzidfilenameid);
+  ~MzIDIO();
+  };
+//------------------------------------------------------------------------------
+class PercolatorOutI : public XMLIO {
+  private:
+  string filename,uniquemzidfilename;
+  bool decoy;
+
+  public:
+  PercolatorOutI();
+  bool setFilename(string filename);
+  void setUniqueMzIDFilename(string filename);
+  bool noFilename();
+  void setDecoy();
+  bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values, bool writemsg);
+  string convertPSMIDFileName(string percolatorid);
+  static string convertPSMID(string percolatorid);
+  };
 //------------------------------------------------------------------------------
 #endif // XMLIO_H

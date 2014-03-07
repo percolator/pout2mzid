@@ -18,44 +18,246 @@
 #include "xmlio.h"
 
 //------------------------------------------------------------------------------
-XMLIO::XMLIO() {
+PercolatorOutFeatures::PercolatorOutFeatures() {
   filename="";
-  outputfilename="";
+  psmid="";
+  parameter=-1;
+  }
+//------------------------------------------------------------------------------
+PercolatorOutFeatures::PercolatorOutFeatures(string filename, string psmid, int parameter) {
+  this->filename=filename;
+  this->psmid=psmid;
+  this->parameter=parameter;
+  }
+//------------------------------------------------------------------------------
+bool PercolatorOutFeatures::operator==(PercolatorOutFeatures const& p) const {
+  return this->filename.compare(p.filename)==0 &&
+         this->psmid.compare(p.psmid)==0 &&
+         this->parameter==p.parameter;
+  }
+//------------------------------------------------------------------------------
+size_t PercolatorOutFeatures::operator()(PercolatorOutFeatures const& p) const {
+  size_t seed=0;
+  boost::hash_combine(seed,p.filename);
+  boost::hash_combine(seed,p.psmid);
+  boost::hash_combine(seed,p.parameter);
+  return seed;
+  }
+//------------------------------------------------------------------------------
+XMLIO::XMLIO() {
+  validatexml=xml_schema::flags::dont_initialize;
+  }
+//------------------------------------------------------------------------------
+void XMLIO::unsetValidation() {
+  validatexml|=xml_schema::flags::dont_validate;
+  }
+//------------------------------------------------------------------------------
+MzIDIO::MzIDIO() {
+  outputfileending="";
+  warning=true;
+  }
+//------------------------------------------------------------------------------
+void MzIDIO::setOutputFileEnding(string fileending) {
+  outputfileending=fileending;
+  }
+//------------------------------------------------------------------------------
+void MzIDIO::unsetWarningFlag() {
+  warning=false;
+  }
+//------------------------------------------------------------------------------
+void MzIDIO::setFilename(string filename) {
+  this->filename.push_back(filename);
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::addFilenames(string filenamefile) {
+  ifstream fp1;
+  string s1;
+
+  if (!boost::filesystem::exists(filenamefile.c_str()))
+    return false;
+  fp1.open(filenamefile.c_str());
+  while (!fp1.eof()) {
+    getline(fp1,s1);
+    if (s1.length()==0)
+      continue;
+    setFilename(s1);
+    }
+  fp1.close();
+  return true;
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::checkFilenames() {
+  int i1;
+  bool b1;
+
+  b1=true;
+  for (i1=0; i1<filename.size(); i1++)
+    if (!boost::filesystem::exists(filename[i1].c_str())) {
+      ErrorReporter::throwError(ErrorReporter::TEXT::NO_MZID_FILE,filename[i1]);
+      b1=false;
+      }
+  return b1 || warning;
+  }
+//------------------------------------------------------------------------------
+string MzIDIO::getUniqueFilename() {
+  return filename.size()==1?filename[0]:"";
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::FileOutput() {
+  return outputfileending.length()>0;
+  }
+//------------------------------------------------------------------------------
+string MzIDIO::setOutputFileName(int mzidfilenameid) {
+  boost::filesystem::path filepath(filename[mzidfilenameid]);
+  return filepath.replace_extension("").string()+outputfileending+filepath.extension().string();
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values) {
+  int i1,vi1,n;
+  mzidXML::AnalysisDataType::SpectrumIdentificationList_iterator listit;
+  mzidXML::SpectrumIdentificationListType::SpectrumIdentificationResult_iterator resultit;
+  mzidXML::SpectrumIdentificationResultType::SpectrumIdentificationItem_iterator itemit;
+  ifstream fpi;
+
+  n=0;
+  try {
+    for (vi1=0; vi1<filename.size(); vi1++) {
+      fpi.open(filename[vi1].c_str(),ifstream::in);
+      auto_ptr<mzidXML::MzIdentMLType> pmzid (mzidXML::MzIdentML(fpi, validatexml));
+      for (listit=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().begin();
+           listit!=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().end(); listit++)
+        for (resultit=listit->SpectrumIdentificationResult().begin();
+             resultit!=listit->SpectrumIdentificationResult().end(); resultit++)
+          for (itemit=resultit->SpectrumIdentificationItem().begin();
+               itemit!=resultit->SpectrumIdentificationItem().end(); itemit++) {
+            for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
+              if (pout_values.find(PercolatorOutFeatures(filename[vi1],itemit->id(),i1))==pout_values.end())
+                continue;
+              n++;
+              switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
+                case MZID_PARAM::USERPARAM: {
+                  auto_ptr<mzidXML::UserParamType> newuserparam (new mzidXML::UserParamType(MZID_PARAM::ELEMENT_DATA::NAMES[i1]));
+                  newuserparam->value(pout_values[PercolatorOutFeatures(filename[vi1],itemit->id(),i1)]);
+                  itemit->userParam().push_back(newuserparam);
+                  break;
+                  }
+                case MZID_PARAM::CVPARAM: {
+                  auto_ptr<mzidXML::CVParamType> newcvparam (new mzidXML::CVParamType(MZID_PARAM::ELEMENT_DATA::NAMES[i1],
+                                                                                      MZID_PARAM::ELEMENT_DATA::CVREFS[i1],
+                                                                                      MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1]));
+                  newcvparam->value(pout_values[PercolatorOutFeatures(filename[vi1],itemit->id(),i1)]);
+                  itemit->cvParam().push_back(newcvparam);
+                  break;
+                  }
+                }
+              pout_values.erase(PercolatorOutFeatures(filename[vi1],itemit->id(),i1));
+              }
+            }
+      fpi.close();
+      if (!saveMZIDFile(pmzid,vi1)) {
+        return false;
+        }
+      }
+    if (FileOutput()) {
+      printf(STATUS::TEXT::INSERTED,n);
+      for (boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>::iterator
+          it=pout_values.begin(); it!=pout_values.end(); it++)
+        cout << "Warning: " << it->first.filename << " psm_id: " << it->first.psmid << " not entered." << endl;
+      }
+    return true;
+    }
+  catch (xml_schema::expected_element &e) {
+    cerr << e << endl;
+    fpi.close();
+    return false;
+    }
+  catch(xml_schema::exception &e) {
+    cerr << e << endl;
+    fpi.close();
+    return false;
+    }
+  catch (exception &e) {
+    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_INSERT,e);
+    fpi.close();
+    return false;
+    }
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid, int mzidfilenameid) {
+  xml_schema::namespace_infomap map;
+  ofstream ofs;
+
+  try {
+    map[""].name=MZID_PARAM::SCHEMA_NAME;
+    map[""].schema=MZID_PARAM::SCHEMA;
+    if (FileOutput())
+      ofs.open(setOutputFileName(mzidfilenameid).c_str());
+    mzidXML::MzIdentML(ofs.is_open()?ofs:cout, *pmzid, map,"UTF-8",validatexml);
+    ofs.close();
+    return true;
+    }
+  catch(exception &e) {
+    ofs.close();
+    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_SAVE,e);
+    return false;
+    }
+  }
+//------------------------------------------------------------------------------
+MzIDIO::~MzIDIO() {
+  filename.clear();
+  }
+//------------------------------------------------------------------------------
+PercolatorOutI::PercolatorOutI() {
+  filename="";
+  uniquemzidfilename="";
   decoy=false;
   }
 //------------------------------------------------------------------------------
-bool XMLIO::setFilename(string filename) {
+bool PercolatorOutI::setFilename(string filename) {
   this->filename=filename;
   return boost::filesystem::exists(filename.c_str());
   }
 //------------------------------------------------------------------------------
-void XMLIO::setOutputFilename(string filename) {
-  this->outputfilename=filename;
+void PercolatorOutI::setUniqueMzIDFilename(string filename) {
+  uniquemzidfilename=filename;
   }
 //------------------------------------------------------------------------------
-void XMLIO::setDecoy() {
+bool PercolatorOutI::noFilename() {
+  return filename.length()==0;
+  }
+//------------------------------------------------------------------------------
+void PercolatorOutI::setDecoy() {
   decoy=true;
   }
 //------------------------------------------------------------------------------
-bool XMLIO::getPoutValues(boost::unordered_map<pair<string, int>, double> &pout_values, bool writemsg) {
-  string psmid;
+bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values, bool writemsg) {
+  string psmid,psmidfile;
   poutXML::psms::psm_const_iterator psmit;
   poutXML::peptides::peptide_const_iterator peptideit;
   poutXML::psm_ids::psm_id_const_iterator psmidsit;
+  ifstream fpi;
 
   try {
-    auto_ptr<poutXML::percolator_output> ppout (poutXML::percolator_output_(filename, xml_schema::flags::dont_validate));
+    fpi.open(filename.c_str(),ifstream::in);
+    auto_ptr<poutXML::percolator_output> ppout (poutXML::percolator_output_(fpi,validatexml));
     for (psmit=ppout->psms().psm().begin(); psmit!=ppout->psms().psm().end(); psmit++) {
       if (decoy!=boost::lexical_cast<bool>(psmit->decoy()))
         continue;
       psmid=convertPSMID(psmit->psm_id());
       if (psmid.length()==0) {
         ErrorReporter::throwError(ErrorReporter::TEXT::WRONG_FORMAT_PSM,psmid);
+        fpi.close();
         return false;
         }
-      pout_values[make_pair(psmid,PERCOLATOR_PARAM::VALUES::SVM_SCORE)]=boost::lexical_cast<double>(psmit->svm_score());
-      pout_values[make_pair(psmid,PERCOLATOR_PARAM::VALUES::Q_VALUE)]=boost::lexical_cast<double>(psmit->q_value());
-      pout_values[make_pair(psmid,PERCOLATOR_PARAM::VALUES::PEP)]=boost::lexical_cast<double>(psmit->pep());
+      psmidfile=convertPSMIDFileName(psmit->psm_id());
+      if (psmidfile.length()==0) {
+        ErrorReporter::throwError(ErrorReporter::TEXT::NO_UNIQUE_MZID_FILE,psmid);
+        fpi.close();
+        return false;
+        }
+      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::SVM_SCORE)]=global::to_string(psmit->svm_score());
+      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::Q_VALUE)]=global::to_string(psmit->q_value());
+      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEP)]=global::to_string(psmit->pep());
       }
     if (writemsg)
       printf(STATUS::TEXT::READ_PSM,(int)pout_values.size());
@@ -66,111 +268,57 @@ bool XMLIO::getPoutValues(boost::unordered_map<pair<string, int>, double> &pout_
         psmid=convertPSMID(*psmidsit);
         if (psmid.length()==0) {
           ErrorReporter::throwError(ErrorReporter::TEXT::WRONG_FORMAT_PSM,psmid);
+          fpi.close();
           return false;
           }
-        pout_values[make_pair(psmid,PERCOLATOR_PARAM::VALUES::PEPTIDE_Q_VALUE)]=boost::lexical_cast<double>(peptideit->q_value());
-        pout_values[make_pair(psmid,PERCOLATOR_PARAM::VALUES::PEPTIDE_PEP)]=boost::lexical_cast<double>(peptideit->pep());
+        psmidfile=convertPSMIDFileName(*psmidsit);
+        if (psmidfile.length()==0) {
+          ErrorReporter::throwError(ErrorReporter::TEXT::NO_UNIQUE_MZID_FILE,psmid);
+          fpi.close();
+          return false;
+          }
+        pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_Q_VALUE)]=global::to_string(peptideit->q_value());
+        pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_PEP)]=global::to_string(peptideit->pep());
         }
       }
     if (writemsg)
       printf(STATUS::TEXT::TOTAL_READ,(int)pout_values.size());
+    fpi.close();
     return true;
     }
   catch (xml_schema::expected_element &e) {
     cerr << e << endl;
+    fpi.close();
     return false;
     }
   catch(xml_schema::exception &e) {
     cerr << e << endl;
+    fpi.close();
     return false;
     }
   catch (exception &e) {
     ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_LOAD_PERCOLATOR_FILE,e);
+    fpi.close();
     return false;
     }
   }
 //------------------------------------------------------------------------------
-bool XMLIO::insertMZIDValues(boost::unordered_map<pair<string, int>, double> pout_values) {
-  int i1,n;
-  mzidXML::AnalysisDataType::SpectrumIdentificationList_iterator listit;
-  mzidXML::SpectrumIdentificationListType::SpectrumIdentificationResult_iterator resultit;
-  mzidXML::SpectrumIdentificationResultType::SpectrumIdentificationItem_iterator itemit;
+string PercolatorOutI::convertPSMIDFileName(string percolatorid) {
+  string psmidfile;
+  int i1;
 
-  n=0;
-  try {
-    auto_ptr<mzidXML::MzIdentMLType> pmzid (mzidXML::MzIdentML(filename));
-    for (listit=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().begin();
-         listit!=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().end(); listit++)
-      for (resultit=listit->SpectrumIdentificationResult().begin();
-           resultit!=listit->SpectrumIdentificationResult().end(); resultit++)
-        for (itemit=resultit->SpectrumIdentificationItem().begin();
-             itemit!=resultit->SpectrumIdentificationItem().end(); itemit++) {
-          for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENTS); i1++) {
-            if (pout_values.find(make_pair(itemit->id(),i1))==pout_values.end())
-              continue;
-            n++;
-            switch (MZID_PARAM::ELEMENTS[i1]) {
-              case MZID_PARAM::USERPARAM: {
-                auto_ptr<mzidXML::UserParamType> newuserparam (new mzidXML::UserParamType(MZID_PARAM::ATTRIBUTES::NAMES[i1]));
-                newuserparam->value(global::to_string(pout_values[make_pair(itemit->id(),i1)]));
-                itemit->userParam().push_back(newuserparam);
-                break;
-                }
-              case MZID_PARAM::CVPARAM: {
-                auto_ptr<mzidXML::CVParamType> newcvparam (new mzidXML::CVParamType(MZID_PARAM::ATTRIBUTES::NAMES[i1],
-                                                                                    MZID_PARAM::ATTRIBUTES::CVREFS[i1],
-                                                                                    MZID_PARAM::ATTRIBUTES::ACCESSIONS[i1]));
-                newcvparam->value(global::to_string(pout_values[make_pair(itemit->id(),i1)]));
-                itemit->cvParam().push_back(newcvparam);
-                break;
-                }
-              }
-            }
-          }
-    if (!saveMZIDFile(pmzid))
-      return false;
-    if (FileOutput())
-      printf(STATUS::TEXT::INSERTED,n);
-    return true;
-    }
-  catch (xml_schema::expected_element &e) {
-    cerr << e << endl;
-    return false;
-    }
-  catch(xml_schema::exception &e) {
-    cerr << e << endl;
-    return false;
-    }
-  catch (exception &e) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_INSERT,e);
-    return false;
-    }
+  psmidfile=uniquemzidfilename;
+  i1=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
+  if (i1!=string::npos)
+    psmidfile=percolatorid.substr(0,i1)+MZID_PARAM::FILE_EXTENSION;
+  return psmidfile;
   }
 //------------------------------------------------------------------------------
-bool XMLIO::saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid) {
-  xml_schema::namespace_infomap map;
-
-  try {
-    map[""].name=MZID_PARAM::SCHEMA_NAME;
-    map[""].schema=MZID_PARAM::SCHEMA;
-    if (outputfilename.length()!=0) {
-      ofstream ofs(outputfilename.c_str());
-      mzidXML::MzIdentML(ofs, *pmzid, map);
-      }
-    else
-      mzidXML::MzIdentML(cout, *pmzid, map);
-    return true;
-    }
-  catch(exception &e) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_SAVE,e);
-    return false;
-    }
-  }
-//------------------------------------------------------------------------------
-string XMLIO::convertPSMID(string percolatorid) {
+string PercolatorOutI::convertPSMID(string percolatorid) {
   int i1,i2;
 
-  for (i1=0, i2=-1; i1<PERCOLATOR_PARAM::N_DELIMINATOR_PSM_ID; i1++)
+  i2=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
+  for (i1=0; i1<PERCOLATOR_PARAM::N_DELIMINATOR_PSM_ID; i1++)
     if ((i2=percolatorid.find("_",i2+1))==string::npos) {
       ErrorReporter::throwError(ErrorReporter::TEXT::WRONG_FORMAT_PSM,percolatorid);
       return "";
@@ -178,14 +326,4 @@ string XMLIO::convertPSMID(string percolatorid) {
   return percolatorid.substr(0,i2);
   }
 //------------------------------------------------------------------------------
-bool XMLIO::checkDecoy(string decoyattribute) {
-  return (decoyattribute.compare("true")==0)==decoy;
-  }
-//------------------------------------------------------------------------------
-bool XMLIO::FileOutput() {
-  return outputfilename.length()>0;
-  }
-//------------------------------------------------------------------------------
-XMLIO::~XMLIO() {
-  }
-//------------------------------------------------------------------------------
+

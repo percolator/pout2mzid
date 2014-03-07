@@ -31,11 +31,12 @@ using namespace std;
 // global constants and functions used
 //------------------------------------------------------------------------------
 namespace global {
-  const int N_MAIN_ARGUMENT=3;
-  const char OUTPUTFILE_COMMAND[]="-o";
-  const char DECOY_COMMAND[]="-d";
+  template<typename T> string to_string(T value) {  //lexical_cast does funny things with double
+    stringstream s1;
 
-  string to_string(double value);
+    s1 << value;
+    return s1.str();
+    }
   }
 //------------------------------------------------------------------------------
 // functions and strings used for reporting error messages
@@ -47,10 +48,19 @@ namespace ErrorReporter {
   void throwError(const char *error, exception e, string parameter);
 //------------------------------------------------------------------------------
   namespace TEXT {
-    const char HELP[]="pout2mzid [Percolator XML file] [mzIdentML file] [OPTIONS]\n"
+    const char HELP[]="pout2mzid [OPTIONS]\n"
                       "\nOPTIONS\n\n"
-                      "-o [mzIdentML file]\tOutputs the results to this file\n"
-                      "-d\t\t\tOnly adds results to entries with decoy set to true. DEFAULT: false\n";
+                      "-h\t\t\tDisplays this help text.\n"
+                      "-p [PercolatorOut file]\tPercolator Out XML result file\n"
+                      "-m [mzIdentML file]\tMzIdentML input file\n"
+                      "-o [mzIdentML file end]\tOutputs the results to original filenam+[mzIdentML file end].\n"
+                      "\t\t\tIf [mzIdentML file end] is omitted _output will be added to filename. DEFAULT: output to stdout\n"
+                      "-f [file]\t\tFile containing a list of mzIdentML filenames\n"
+                      "-d\t\t\tOnly adds results to entries with decoy set to true. DEFAULT: false\n"
+                      "-v\t\t\tSets that validation of XML schema should not be performed. Faster parsing.\n"
+                      "-w\t\t\tSets that upon warning the software should terminate.\n";
+    const char PERCOLATOR_FILE_NOT_ENTERED[]="Percolator out file has not been defined\n";
+    const char MZID_FILE_NOT_ENTERED[]="mzIdentML file has not been defined\n";
     const char NO_PERCOLATOR_FILE[]="Percolator XML file %s does not exist\n";
     const char NO_MZID_FILE[]="mzIdentML file %s does not exist\n";
     const char CANNOT_LOAD[]="Cannot load file %s\n";
@@ -58,6 +68,7 @@ namespace ErrorReporter {
     const char BAD_PATH[]="Bad path in file %s\n";
     const char NO_ELEMENT_PERCOLATOR[]="Element %s in percolator_out file not found\n";
     const char WRONG_FORMAT_PSM[]="Psm ID %s in percolator out file has the wrong format\n";
+    const char NO_UNIQUE_MZID_FILE[]="Percolator out file does not contain MzID file ID, on mutiple MzID files\n";
     const char CANNOT_INSERT[]="Cannot insert new percolator out values into mzIdentML file\n";
     const char CANNOT_SAVE[]="Cannot save mzIdentML file\n";
     const char CANNOT_READ_MZID[]="Cannot read mzIdentML file XML Path\n";

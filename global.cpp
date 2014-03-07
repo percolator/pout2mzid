@@ -17,13 +17,6 @@
 
 #include "global.h"
 //------------------------------------------------------------------------------
-string global::to_string(double value) {  //lexical_cast does funny things with double
-  stringstream s1;
-
-  s1 << value;
-  return s1.str();
-  }
-//------------------------------------------------------------------------------
 void ErrorReporter::throwError(const char *error, exception e, string parameter) {
   printf(error,parameter.c_str());
   printf("Error type: %s\n",e.what());

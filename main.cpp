@@ -19,36 +19,66 @@
 #include "xmlio.h"
 
 //------------------------------------------------------------------------------
-XMLIO percolator,mzid;
-boost::unordered_map<pair<string, int>, double> pout_values;
+PercolatorOutI percolator;
+MzIDIO mzid;
+boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values;
 //------------------------------------------------------------------------------
 void CleanUp(bool exitvalue) {
   pout_values.clear();
+  xercesc::XMLPlatformUtils::Terminate();
   exit(exitvalue);
   }
 //------------------------------------------------------------------------------
 int main(int argc, char **argv) {
-  int i1;
+  int opt;
 
-  if (argc<global::N_MAIN_ARGUMENT) {
-    printVersion ();
-    ErrorReporter::throwError(ErrorReporter::TEXT::HELP);
-    CleanUp(EXIT_SUCCESS);
-    }
-  for (i1=0; i1<argc; i1++) {
-    if (strcmp(argv[i1],global::DECOY_COMMAND)==0)
-      percolator.setDecoy();
-    if (strcmp(argv[i1],global::OUTPUTFILE_COMMAND)==0 && (i1+1)<argc)
-      mzid.setOutputFilename(argv[i1+1]);
-    }
-  if (!percolator.setFilename(argv[1])) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::NO_PERCOLATOR_FILE,argv[1]);
+  while ((opt=getopt(argc,argv,"o::m:p:f:vdhw")) != EOF)
+    switch(opt) {
+      case 'd':
+        percolator.setDecoy();
+        break;
+      case 'v':
+        percolator.unsetValidation();
+        mzid.unsetValidation();
+        break;
+      case 'o':
+        mzid.setOutputFileEnding(optarg?optarg:MZID_PARAM::FILE_END_DEFAULT);
+        break;
+      case 'p':
+        if (!percolator.setFilename(optarg)) {
+          ErrorReporter::throwError(ErrorReporter::TEXT::NO_PERCOLATOR_FILE,optarg);
+          CleanUp(EXIT_FAILURE);
+          }
+        break;
+      case 'm':
+        mzid.setFilename(optarg);
+        break;
+      case 'f':
+        if (!mzid.addFilenames(optarg)) {
+          ErrorReporter::throwError(ErrorReporter::TEXT::NO_MZID_FILE,optarg);
+          CleanUp(EXIT_FAILURE);
+          }
+        break;
+      case 'w':
+        mzid.unsetWarningFlag();
+        break;
+      case 'h':
+      case '?':
+        printVersion();
+        ErrorReporter::throwError(ErrorReporter::TEXT::HELP);
+        CleanUp(EXIT_SUCCESS);
+        break;
+      default:
+        CleanUp(EXIT_SUCCESS);
+      }
+  if (!mzid.checkFilenames())
+    CleanUp(EXIT_FAILURE);
+  if (percolator.noFilename()) {
+    ErrorReporter::throwError(ErrorReporter::TEXT::PERCOLATOR_FILE_NOT_ENTERED);
     CleanUp(EXIT_FAILURE);
     }
-  if (!mzid.setFilename(argv[2])) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::NO_MZID_FILE,argv[2]);
-    CleanUp(EXIT_FAILURE);
-    }
+  xercesc::XMLPlatformUtils::Initialize();
+  percolator.setUniqueMzIDFilename(mzid.getUniqueFilename());
   if (!percolator.getPoutValues(pout_values,mzid.FileOutput())) {
     ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_LOAD_PERCOLATOR_FILE);
     CleanUp(EXIT_FAILURE);
