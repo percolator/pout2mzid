@@ -93,7 +93,7 @@ bool MzIDIO::checkFilenames() {
   b1=true;
   for (i1=0; i1<filename.size(); i1++)
     if (!boost::filesystem::exists(filename[i1].c_str())) {
-      ErrorReporter::throwError(ErrorReporter::TEXT::NO_MZID_FILE,filename[i1]);
+      cout << boost::format(PRINT_TEXT::NO_MZID_FILE) % filename[i1] << endl;
       b1=false;
       }
   return b1 || warning;
@@ -154,15 +154,14 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
               }
             }
       fpi.close();
-      if (!saveMZIDFile(pmzid,vi1)) {
-        return false;
-        }
+      if (!saveMZIDFile(pmzid,vi1))
+        THROW_ERROR(PRINT_TEXT::CANNOT_SAVE);
       }
     if (FileOutput()) {
-      printf(STATUS::TEXT::INSERTED,n);
+      cout << boost::format(PRINT_TEXT::INSERTED) % n << endl;
       for (boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>::iterator
           it=pout_values.begin(); it!=pout_values.end(); it++)
-        cout << "Warning: " << it->first.filename << " psm_id: " << it->first.psmid << " not entered." << endl;
+        cout << boost::format(PRINT_TEXT::PSM_NOT_ENTERED) % it->first.filename % it->first.psmid << endl;
       }
     return true;
     }
@@ -177,7 +176,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
     return false;
     }
   catch (exception &e) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_INSERT,e);
+    cout << e.what() << endl;
     fpi.close();
     return false;
     }
@@ -198,7 +197,7 @@ bool MzIDIO::saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid, int mzidfilen
     }
   catch(exception &e) {
     ofs.close();
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_SAVE,e);
+    cout << e.what() << endl;
     return false;
     }
   }
@@ -244,45 +243,33 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
       if (decoy!=boost::lexical_cast<bool>(psmit->decoy()))
         continue;
       psmid=convertPSMID(psmit->psm_id());
-      if (psmid.length()==0) {
-        ErrorReporter::throwError(ErrorReporter::TEXT::WRONG_FORMAT_PSM,psmid);
-        fpi.close();
-        return false;
-        }
+      if (psmid.length()==0)
+        THROW_ERROR_VALUE(PRINT_TEXT::WRONG_FORMAT_PSM,psmid);
       psmidfile=convertPSMIDFileName(psmit->psm_id());
-      if (psmidfile.length()==0) {
-        ErrorReporter::throwError(ErrorReporter::TEXT::NO_UNIQUE_MZID_FILE,psmid);
-        fpi.close();
-        return false;
-        }
+      if (psmidfile.length()==0)
+        THROW_ERROR_VALUE(PRINT_TEXT::NO_UNIQUE_MZID_FILE,psmid);
       pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::SVM_SCORE)]=global::to_string(psmit->svm_score());
       pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::Q_VALUE)]=global::to_string(psmit->q_value());
       pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEP)]=global::to_string(psmit->pep());
       }
     if (writemsg)
-      printf(STATUS::TEXT::READ_PSM,(int)pout_values.size());
+      cout << boost::format(PRINT_TEXT::READ_PSM) % pout_values.size() << endl;
     for (peptideit=ppout->peptides()->peptide().begin(); peptideit!=ppout->peptides()->peptide().end(); peptideit++) {
       if (decoy!=boost::lexical_cast<bool>(peptideit->decoy()))
         continue;
       for (psmidsit=peptideit->psm_ids().psm_id().begin(); psmidsit!=peptideit->psm_ids().psm_id().end(); psmidsit++) {
         psmid=convertPSMID(*psmidsit);
-        if (psmid.length()==0) {
-          ErrorReporter::throwError(ErrorReporter::TEXT::WRONG_FORMAT_PSM,psmid);
-          fpi.close();
-          return false;
-          }
+        if (psmid.length()==0)
+          THROW_ERROR_VALUE(PRINT_TEXT::WRONG_FORMAT_PSM,psmid);
         psmidfile=convertPSMIDFileName(*psmidsit);
-        if (psmidfile.length()==0) {
-          ErrorReporter::throwError(ErrorReporter::TEXT::NO_UNIQUE_MZID_FILE,psmid);
-          fpi.close();
-          return false;
-          }
+        if (psmidfile.length()==0)
+          THROW_ERROR_VALUE(PRINT_TEXT::NO_UNIQUE_MZID_FILE,psmid);
         pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_Q_VALUE)]=global::to_string(peptideit->q_value());
         pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_PEP)]=global::to_string(peptideit->pep());
         }
       }
     if (writemsg)
-      printf(STATUS::TEXT::TOTAL_READ,(int)pout_values.size());
+      cout << boost::format(PRINT_TEXT::TOTAL_READ) % pout_values.size() << endl;
     fpi.close();
     return true;
     }
@@ -297,7 +284,7 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
     return false;
     }
   catch (exception &e) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_LOAD_PERCOLATOR_FILE,e);
+    cout << e.what() << endl;
     fpi.close();
     return false;
     }
@@ -319,10 +306,8 @@ string PercolatorOutI::convertPSMID(string percolatorid) {
 
   i2=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
   for (i1=0; i1<PERCOLATOR_PARAM::N_DELIMINATOR_PSM_ID; i1++)
-    if ((i2=percolatorid.find("_",i2+1))==string::npos) {
-      ErrorReporter::throwError(ErrorReporter::TEXT::WRONG_FORMAT_PSM,percolatorid);
+    if ((i2=percolatorid.find("_",i2+1))==string::npos)
       return "";
-      }
   return percolatorid.substr(0,i2);
   }
 //------------------------------------------------------------------------------

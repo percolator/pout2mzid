@@ -32,62 +32,58 @@ void CleanUp(bool exitvalue) {
 int main(int argc, char **argv) {
   int opt;
 
-  while ((opt=getopt(argc,argv,"o::m:p:f:vdhw")) != EOF)
-    switch(opt) {
-      case 'd':
-        percolator.setDecoy();
-        break;
-      case 'v':
-        percolator.unsetValidation();
-        mzid.unsetValidation();
-        break;
-      case 'o':
-        mzid.setOutputFileEnding(optarg?optarg:MZID_PARAM::FILE_END_DEFAULT);
-        break;
-      case 'p':
-        if (!percolator.setFilename(optarg)) {
-          ErrorReporter::throwError(ErrorReporter::TEXT::NO_PERCOLATOR_FILE,optarg);
-          CleanUp(EXIT_FAILURE);
-          }
-        break;
-      case 'm':
-        mzid.setFilename(optarg);
-        break;
-      case 'f':
-        if (!mzid.addFilenames(optarg)) {
-          ErrorReporter::throwError(ErrorReporter::TEXT::NO_MZID_FILE,optarg);
-          CleanUp(EXIT_FAILURE);
-          }
-        break;
-      case 'w':
-        mzid.unsetWarningFlag();
-        break;
-      case 'h':
-      case '?':
-        printVersion();
-        ErrorReporter::throwError(ErrorReporter::TEXT::HELP);
-        CleanUp(EXIT_SUCCESS);
-        break;
-      default:
-        CleanUp(EXIT_SUCCESS);
-      }
-  if (!mzid.checkFilenames())
-    CleanUp(EXIT_FAILURE);
-  if (percolator.noFilename()) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::PERCOLATOR_FILE_NOT_ENTERED);
+  try {
+    while ((opt=getopt(argc,argv,"o::m:p:f:vdhw")) != EOF)
+      switch(opt) {
+        case 'd':
+          percolator.setDecoy();
+          break;
+        case 'v':
+          percolator.unsetValidation();
+          mzid.unsetValidation();
+          break;
+        case 'o':
+          mzid.setOutputFileEnding(optarg?optarg:MZID_PARAM::FILE_END_DEFAULT);
+          break;
+        case 'p':
+          if (!percolator.setFilename(optarg))
+            THROW_ERROR_VALUE(PRINT_TEXT::NO_PERCOLATOR_FILE,optarg);
+          break;
+        case 'm':
+          mzid.setFilename(optarg);
+          break;
+        case 'f':
+          if (!mzid.addFilenames(optarg))
+            THROW_ERROR_VALUE(PRINT_TEXT::NO_MZID_FILE,optarg);
+          break;
+        case 'w':
+          mzid.unsetWarningFlag();
+          break;
+        case 'h':
+        case '?':
+          printVersion();
+          cout << PRINT_TEXT::HELP << endl;
+          CleanUp(EXIT_SUCCESS);
+          break;
+        default:
+          CleanUp(EXIT_SUCCESS);
+        }
+    if (!mzid.checkFilenames())
+      CleanUp(EXIT_FAILURE);
+    if (percolator.noFilename())
+      THROW_ERROR(PRINT_TEXT::PERCOLATOR_FILE_NOT_ENTERED);
+    xercesc::XMLPlatformUtils::Initialize();
+    percolator.setUniqueMzIDFilename(mzid.getUniqueFilename());
+    if (!percolator.getPoutValues(pout_values,mzid.FileOutput()))
+      THROW_ERROR(PRINT_TEXT::CANNOT_LOAD_PERCOLATOR_FILE);
+    if (!mzid.insertMZIDValues(pout_values))
+      THROW_ERROR(PRINT_TEXT::CANNOT_INSERT);
+    CleanUp(EXIT_SUCCESS);
+    }
+  catch(exception &e) {
+    cout << e.what() << endl;
     CleanUp(EXIT_FAILURE);
     }
-  xercesc::XMLPlatformUtils::Initialize();
-  percolator.setUniqueMzIDFilename(mzid.getUniqueFilename());
-  if (!percolator.getPoutValues(pout_values,mzid.FileOutput())) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_LOAD_PERCOLATOR_FILE);
-    CleanUp(EXIT_FAILURE);
-    }
-  if (!mzid.insertMZIDValues(pout_values)) {
-    ErrorReporter::throwError(ErrorReporter::TEXT::CANNOT_INSERT);
-    CleanUp(EXIT_FAILURE);
-    }
-  CleanUp(EXIT_SUCCESS);
   }
 //------------------------------------------------------------------------------
 

@@ -26,6 +26,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/format.hpp>
 
 #include "global.h"
 #include "percolator_out.hxx"
