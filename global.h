@@ -49,31 +49,31 @@ namespace PRINT_TEXT {
                     "-h\t\t\tDisplays this help text.\n"
                     "-p [PercolatorOut file]\tPercolator Out XML result file\n"
                     "-m [mzIdentML file]\tMzIdentML input file\n"
-                    "-o [mzIdentML file end]\tOutputs the results to original filenam+[mzIdentML file end].\n"
+                    "-o [mzIdentML file end]\tOutputs the results to original filename [mzIdentML file end].\n"
                     "\t\t\tIf [mzIdentML file end] is omitted _output will be added to filename. DEFAULT: output to stdout\n"
                     "-f [file]\t\tFile containing a list of mzIdentML filenames\n"
                     "-d\t\t\tOnly adds results to entries with decoy set to true. DEFAULT: false\n"
                     "-v\t\t\tSets that validation of XML schema should not be performed. Faster parsing.\n"
-                    "-w\t\t\tSets that upon warning the software should terminate.\n";
-  const char PERCOLATOR_FILE_NOT_ENTERED[]="Percolator out file has not been defined\n";
-  const char MZID_FILE_NOT_ENTERED[]="mzIdentML file has not been defined\n";
-  const char NO_PERCOLATOR_FILE[]="Percolator XML file %s does not exist\n";
-  const char NO_MZID_FILE[]="mzIdentML file %s does not exist\n";
-  const char CANNOT_LOAD[]="Cannot load file %s\n";
-  const char CANNOT_LOAD_PERCOLATOR_FILE[]="Cannot read percolator out file XML Path\n";
-  const char BAD_PATH[]="Bad path in file %s\n";
-  const char NO_ELEMENT_PERCOLATOR[]="Element %s in percolator_out file not found\n";
-  const char WRONG_FORMAT_PSM[]="Psm ID %s in percolator out file has the wrong format\n";
-  const char NO_UNIQUE_MZID_FILE[]="Percolator out file does not contain MzID file ID, on mutiple MzID files\n";
-  const char CANNOT_INSERT[]="Cannot insert new percolator out values into mzIdentML file\n";
-  const char CANNOT_SAVE[]="Cannot save mzIdentML file\n";
-  const char CANNOT_READ_MZID[]="Cannot read mzIdentML file XML Path\n";
-  const char ELEMENT_NOT_FOUND_MZID[]="Element %s in mzIdentML file not found\n";
-  const char PSM_NOT_ENTERED[]="Warning: %s psm_id: %s not entered.\n";
-  const char READ_PSM[]="Read %d psm results\n";
-  const char READ_PEPTIDE[]="Read %d peptide results\n";
-  const char TOTAL_READ[]="Total of %d results\n";
-  const char INSERTED[]="Inserted %d new values in the mzIdentML file\n";
+                    "-w\t\t\tSets that upon warning the software should terminate.";
+  const char PERCOLATOR_FILE_NOT_ENTERED[]="Percolator out file has not been defined";
+  const char MZID_FILE_NOT_ENTERED[]="mzIdentML file has not been defined";
+  const char NO_PERCOLATOR_FILE[]="Percolator XML file %s does not exist";
+  const char NO_MZID_FILE[]="mzIdentML file %s does not exist";
+  const char CANNOT_LOAD[]="Cannot load file %s";
+  const char CANNOT_LOAD_PERCOLATOR_FILE[]="Cannot read percolator out file XML Path";
+  const char BAD_PATH[]="Bad path in file %s";
+  const char NO_ELEMENT_PERCOLATOR[]="Element %s in percolator_out file not found";
+  const char WRONG_FORMAT_PSM[]="Psm ID %s in percolator out file has the wrong format";
+  const char NO_UNIQUE_MZID_FILE[]="Percolator out file does not contain MzID file ID, on mutiple MzID files";
+  const char CANNOT_INSERT[]="Cannot insert new percolator out values into mzIdentML file";
+  const char CANNOT_SAVE[]="Cannot save mzIdentML file";
+  const char CANNOT_READ_MZID[]="Cannot read mzIdentML file XML Path";
+  const char ELEMENT_NOT_FOUND_MZID[]="Element %s in mzIdentML file not found.";
+  const char PSM_NOT_ENTERED[]="Warning: %s psm_id: %s not entered.";
+  const char READ_PSM[]="Read %d psm results.";
+  const char READ_PEPTIDE[]="Read %d peptide results.";
+  const char TOTAL_READ[]="Total of %d results.";
+  const char INSERTED[]="Inserted %d new values in the mzIdentML file.";
   }
 //------------------------------------------------------------------------------
 #endif // GLOBAL_H

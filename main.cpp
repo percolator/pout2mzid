@@ -74,14 +74,14 @@ int main(int argc, char **argv) {
       THROW_ERROR(PRINT_TEXT::PERCOLATOR_FILE_NOT_ENTERED);
     xercesc::XMLPlatformUtils::Initialize();
     percolator.setUniqueMzIDFilename(mzid.getUniqueFilename());
-    if (!percolator.getPoutValues(pout_values,mzid.FileOutput()))
+    if (!percolator.getPoutValues(pout_values))
       THROW_ERROR(PRINT_TEXT::CANNOT_LOAD_PERCOLATOR_FILE);
     if (!mzid.insertMZIDValues(pout_values))
       THROW_ERROR(PRINT_TEXT::CANNOT_INSERT);
     CleanUp(EXIT_SUCCESS);
     }
   catch(exception &e) {
-    cout << e.what() << endl;
+    cerr << e.what() << endl;
     CleanUp(EXIT_FAILURE);
     }
   }
