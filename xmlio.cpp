@@ -129,7 +129,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
           for (itemit=resultit->SpectrumIdentificationItem().begin();
                itemit!=resultit->SpectrumIdentificationItem().end(); itemit++) {
             for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
-              if (pout_values.find(PercolatorOutFeatures(filename[vi1],itemit->id(),i1))==pout_values.end())
+              if (pout_values.find(PercolatorOutFeatures(mzidname,itemit->id(),i1))==pout_values.end())
                 continue;
               n++;
               switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
@@ -288,7 +288,7 @@ string PercolatorOutI::convertPSMIDFileName(string percolatorid) {
   string psmidfile;
   int i1;
 
-  psmidfile=uniquemzidfilename;
+  psmidfile=boost::lexical_cast<boost::filesystem::path>(uniquemzidfilename).stem().string();
   i1=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
   if (i1!=string::npos)
     psmidfile=percolatorid.substr(0,i1);
