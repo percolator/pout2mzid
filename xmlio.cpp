@@ -93,7 +93,7 @@ bool MzIDIO::checkFilenames() {
   b1=true;
   for (i1=0; i1<filename.size(); i1++)
     if (!boost::filesystem::exists(filename[i1].c_str())) {
-      clog << boost::format(PRINT_TEXT::NO_MZID_FILE) % filename[i1] << endl;
+      cerr << boost::format(PRINT_TEXT::NO_MZID_FILE) % filename[i1] << endl;
       b1=false;
       }
   return b1 || warning;
@@ -114,11 +114,13 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
   mzidXML::SpectrumIdentificationListType::SpectrumIdentificationResult_iterator resultit;
   mzidXML::SpectrumIdentificationResultType::SpectrumIdentificationItem_iterator itemit;
   ifstream fpi;
+  string mzidname;
 
   n=0;
   try {
     for (vi1=0; vi1<filename.size(); vi1++) {
       fpi.open(filename[vi1].c_str(),ifstream::in);
+      mzidname=boost::lexical_cast<boost::filesystem::path>(filename[vi1]).stem().string();
       auto_ptr<mzidXML::MzIdentMLType> pmzid (mzidXML::MzIdentML(fpi, validatexml));
       for (listit=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().begin();
            listit!=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().end(); listit++)
@@ -133,7 +135,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
               switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
                 case MZID_PARAM::USERPARAM: {
                   auto_ptr<mzidXML::UserParamType> newuserparam (new mzidXML::UserParamType(MZID_PARAM::ELEMENT_DATA::NAMES[i1]));
-                  newuserparam->value(pout_values[PercolatorOutFeatures(filename[vi1],itemit->id(),i1)]);
+                  newuserparam->value(pout_values[PercolatorOutFeatures(mzidname,itemit->id(),i1)]);
                   itemit->userParam().push_back(newuserparam);
                   break;
                   }
@@ -141,12 +143,12 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
                   auto_ptr<mzidXML::CVParamType> newcvparam (new mzidXML::CVParamType(MZID_PARAM::ELEMENT_DATA::NAMES[i1],
                                                                                       MZID_PARAM::ELEMENT_DATA::CVREFS[i1],
                                                                                       MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1]));
-                  newcvparam->value(pout_values[PercolatorOutFeatures(filename[vi1],itemit->id(),i1)]);
+                  newcvparam->value(pout_values[PercolatorOutFeatures(mzidname,itemit->id(),i1)]);
                   itemit->cvParam().push_back(newcvparam);
                   break;
                   }
                 }
-              pout_values.erase(PercolatorOutFeatures(filename[vi1],itemit->id(),i1));
+              pout_values.erase(PercolatorOutFeatures(mzidname,itemit->id(),i1));
               }
             }
       fpi.close();
@@ -289,7 +291,7 @@ string PercolatorOutI::convertPSMIDFileName(string percolatorid) {
   psmidfile=uniquemzidfilename;
   i1=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
   if (i1!=string::npos)
-    psmidfile=percolatorid.substr(0,i1)+MZID_PARAM::FILE_EXTENSION;
+    psmidfile=percolatorid.substr(0,i1);
   return psmidfile;
   }
 //------------------------------------------------------------------------------

@@ -42,7 +42,6 @@ namespace MZID_PARAM {
   const char SCHEMA_NAME[]="http://psidev.info/psi/pi/mzIdentML/1.1";
   const char SCHEMA[]="mzIdentML1.1.0.xsd";
   const char FILE_END_DEFAULT[]="_output";
-  const char FILE_EXTENSION[]=".mzid";
   enum ELEMENT_TYPE { USERPARAM,CVPARAM };
 
   namespace ELEMENT_DATA {
