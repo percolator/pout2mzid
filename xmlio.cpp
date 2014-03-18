@@ -99,8 +99,8 @@ bool MzIDIO::checkFilenames() {
   return b1 || warning;
   }
 //------------------------------------------------------------------------------
-string MzIDIO::getUniqueFilename() {
-  return filename.size()==1?filename[0]:"";
+string MzIDIO::getFirstFilename() {
+  return filename[0];
   }
 //------------------------------------------------------------------------------
 string MzIDIO::setOutputFileName(int mzidfilenameid) {
@@ -204,7 +204,7 @@ MzIDIO::~MzIDIO() {
 //------------------------------------------------------------------------------
 PercolatorOutI::PercolatorOutI() {
   filename="";
-  uniquemzidfilename="";
+  firstmzidfilename="";
   decoy=false;
   }
 //------------------------------------------------------------------------------
@@ -213,8 +213,8 @@ bool PercolatorOutI::setFilename(string filename) {
   return boost::filesystem::exists(filename.c_str());
   }
 //------------------------------------------------------------------------------
-void PercolatorOutI::setUniqueMzIDFilename(string filename) {
-  uniquemzidfilename=filename;
+void PercolatorOutI::setFirstMzIDFilename(string filename) {
+  firstmzidfilename=filename;
   }
 //------------------------------------------------------------------------------
 bool PercolatorOutI::noFilename() {
@@ -288,7 +288,7 @@ string PercolatorOutI::convertPSMIDFileName(string percolatorid) {
   string psmidfile;
   int i1;
 
-  psmidfile=boost::lexical_cast<boost::filesystem::path>(uniquemzidfilename).stem().string();
+  psmidfile=boost::lexical_cast<boost::filesystem::path>(firstmzidfilename).stem().string();
   i1=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
   if (i1!=string::npos)
     psmidfile=percolatorid.substr(0,i1);

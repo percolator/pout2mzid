@@ -100,7 +100,7 @@ class MzIDIO : public XMLIO {
   void setFilename(string filename);
   bool addFilenames(string filenamefile);
   bool checkFilenames();
-  string getUniqueFilename();
+  string getFirstFilename();
   string setOutputFileName(int mzidfilenameid);
   bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values);
   bool saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid, int mzidfilenameid);
@@ -109,13 +109,13 @@ class MzIDIO : public XMLIO {
 //------------------------------------------------------------------------------
 class PercolatorOutI : public XMLIO {
   private:
-  string filename,uniquemzidfilename;
+  string filename,firstmzidfilename;
   bool decoy;
 
   public:
   PercolatorOutI();
   bool setFilename(string filename);
-  void setUniqueMzIDFilename(string filename);
+  void setFirstMzIDFilename(string filename);
   bool noFilename();
   void setDecoy();
   bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);

@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     if (percolator.noFilename())
       THROW_ERROR(PRINT_TEXT::PERCOLATOR_FILE_NOT_ENTERED);
     xercesc::XMLPlatformUtils::Initialize();
-    percolator.setUniqueMzIDFilename(mzid.getUniqueFilename());
+    percolator.setFirstMzIDFilename(mzid.getFirstFilename());
     if (!percolator.getPoutValues(pout_values))
       THROW_ERROR(PRINT_TEXT::CANNOT_LOAD_PERCOLATOR_FILE);
     if (!mzid.insertMZIDValues(pout_values))
