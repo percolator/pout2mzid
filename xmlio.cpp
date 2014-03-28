@@ -245,6 +245,7 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
       if (psmidfile.length()==0)
         THROW_ERROR_VALUE(PRINT_TEXT::NO_UNIQUE_MZID_FILE,psmid);
       pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::SVM_SCORE)]=global::to_string(psmit->svm_score());
+      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::P_VALUE)]=global::to_string(psmit->p_value());
       pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::Q_VALUE)]=global::to_string(psmit->q_value());
       pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEP)]=global::to_string(psmit->pep());
       }

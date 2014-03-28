@@ -37,6 +37,8 @@ using namespace std;
 //------------------------------------------------------------------------------
 // Namespaces containing parameters for mzID and percolator out files
 // in case future version of MZID, and percolator out parameters change
+// Accession and cvRef are kept for future migration of obtained values
+// into mzIdentML Controlled Vocabulary
 //------------------------------------------------------------------------------
 namespace MZID_PARAM {
   const char SCHEMA_NAME[]="http://psidev.info/psi/pi/mzIdentML/1.1";
@@ -46,16 +48,16 @@ namespace MZID_PARAM {
 
   namespace ELEMENT_DATA {
     const int ELEMENTS[]={
-      USERPARAM,CVPARAM,CVPARAM,CVPARAM,USERPARAM
+      USERPARAM,USERPARAM,USERPARAM,USERPARAM,USERPARAM,USERPARAM
       };
     const string ACCESSIONS[]={
-      "","MS:1002054","MS:1002056","MS:1002055",""
+      "","MS:1002054","MS:1002056","MS:1002055","",""
       };
     const string CVREFS[]={
-      "","PSI-PI","PSI-PI","PSI-PI",""
+      "","PSI-PI","PSI-PI","PSI-PI","",""
       };
     const string NAMES[]={
-      "svm-score","MS-GF:QValue","MS-GF:PEP","MS-GF:PepQValue","peptide-level-PEP"
+      "percolator:score","percolator:psm_p_value","percolator:psm_q_value","percolator:psm_pep","percolator:peptide_q_value","percolator:peptide_pep"
       };
     }
   }
@@ -63,7 +65,7 @@ namespace MZID_PARAM {
 namespace PERCOLATOR_PARAM {
   const int N_DELIMINATOR_PSM_ID=3;
   const char PSMID_START[]="_SII";
-  enum VALUES { SVM_SCORE,Q_VALUE,PEP,PEPTIDE_Q_VALUE,PEPTIDE_PEP };
+  enum VALUES { SVM_SCORE,P_VALUE,Q_VALUE,PEP,PEPTIDE_Q_VALUE,PEPTIDE_PEP };
   }
 //------------------------------------------------------------------------------
 class PercolatorOutFeatures {
