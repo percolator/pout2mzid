@@ -17,8 +17,10 @@
 
 #include "version_config.h"
 #include "xmlio.h"
+#include "boost/program_options.hpp"
 
 //------------------------------------------------------------------------------
+namespace prgm_opt=boost::program_options;
 PercolatorOutI percolator;
 MzIDIO mzid;
 boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values;
@@ -30,44 +32,44 @@ void CleanUp(bool exitvalue) {
   }
 //------------------------------------------------------------------------------
 int main(int argc, char **argv) {
-  int opt;
+  prgm_opt::variables_map option_map;
+  prgm_opt::options_description options("Options");
 
   try {
-    while ((opt=getopt(argc,argv,"o::m:p:f:vdhw")) != EOF)
-      switch(opt) {
-        case 'd':
-          percolator.setDecoy();
-          break;
-        case 'v':
-          percolator.unsetValidation();
-          mzid.unsetValidation();
-          break;
-        case 'o':
-          mzid.setOutputFileEnding(optarg?optarg:MZID_PARAM::FILE_END_DEFAULT);
-          break;
-        case 'p':
-          if (!percolator.setFilename(optarg))
-            THROW_ERROR_VALUE(PRINT_TEXT::NO_PERCOLATOR_FILE,optarg);
-          break;
-        case 'm':
-          mzid.setFilename(optarg);
-          break;
-        case 'f':
-          if (!mzid.addFilenames(optarg))
-            THROW_ERROR_VALUE(PRINT_TEXT::NO_MZID_FILE,optarg);
-          break;
-        case 'w':
-          mzid.unsetWarningFlag();
-          break;
-        case 'h':
-        case '?':
-          printVersion();
-          cout << PRINT_TEXT::HELP << endl;
-          CleanUp(EXIT_SUCCESS);
-          break;
-        default:
-          CleanUp(EXIT_SUCCESS);
-        }
+    prgm_opt::arg="[File]";
+    options.add_options()
+      (CMDOPTIONS::HELP_OPTION,CMDOPTIONS::HELP_TEXT)
+      (CMDOPTIONS::PERCOLATORFILE_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::PERCOLATORFILE_TEXT)
+      (CMDOPTIONS::MZIDFILE_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILE_TEXT)
+      (CMDOPTIONS::MZIDOUTPUT_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDOUTPUT_TEXT)
+      (CMDOPTIONS::MZIDFILES_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILES_TEXT)
+      (CMDOPTIONS::DECOY_OPTION,CMDOPTIONS::DECOY_TEXT)
+      (CMDOPTIONS::VALIDATION_OPTION,CMDOPTIONS::VALIDATION_TEXT)
+      (CMDOPTIONS::WARNING_OPTION,CMDOPTIONS::WARNING_TEXT);
+    prgm_opt::store(prgm_opt::parse_command_line(argc,argv,options),option_map);
+    if (option_map.count(CMDOPTIONS::HELP_TEST)) {
+      printVersion();
+      cout << options;
+      CleanUp(EXIT_SUCCESS);
+      }
+    if (option_map.count(CMDOPTIONS::DECOY_TEST))
+      percolator.setDecoy();
+    if (option_map.count(CMDOPTIONS::VALIDATION_TEST)) {
+      percolator.unsetValidation();
+      mzid.unsetValidation();
+      }
+    if (option_map.count(CMDOPTIONS::MZIDOUTPUT_TEST))
+      mzid.setOutputFileEnding(option_map[CMDOPTIONS::MZIDOUTPUT_TEST].as<string>());
+    if (option_map.count(CMDOPTIONS::PERCOLATORFILE_TEST))
+      if (!percolator.setFilename(option_map[CMDOPTIONS::PERCOLATORFILE_TEST].as<string>()))
+        THROW_ERROR_VALUE(PRINT_TEXT::NO_PERCOLATOR_FILE,option_map[CMDOPTIONS::PERCOLATORFILE_TEST].as<string>());
+    if (option_map.count(CMDOPTIONS::MZIDFILE_TEST))
+      mzid.setFilename(option_map[CMDOPTIONS::MZIDFILE_TEST].as<string>());
+    if (option_map.count(CMDOPTIONS::MZIDFILES_TEST))
+      if (!mzid.addFilenames(option_map[CMDOPTIONS::MZIDFILES_TEST].as<string>()))
+        THROW_ERROR_VALUE(PRINT_TEXT::NO_MZID_FILE,option_map[CMDOPTIONS::MZIDFILES_TEST].as<string>());
+    if (option_map.count(CMDOPTIONS::WARNING_TEST))
+       mzid.unsetWarningFlag();
     if (!mzid.checkFilenames())
       CleanUp(EXIT_FAILURE);
     if (percolator.noFilename())

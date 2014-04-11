@@ -41,7 +41,37 @@ namespace global {
     }
   }
 //------------------------------------------------------------------------------
-// strings used for reporting error messages and status
+// strings used for options
+//------------------------------------------------------------------------------
+namespace CMDOPTIONS {
+  const char HELP_OPTION[]="help,h";
+  const char HELP_TEST[]="help";
+  const char HELP_TEXT[]="Displays available commands\n";
+  const char PERCOLATORFILE_OPTION[]="percolatorfile,p";
+  const char PERCOLATORFILE_TEST[]="percolatorfile";
+  const char PERCOLATORFILE_TEXT[]="Percolator Out XML result file\n";
+  const char MZIDFILE_OPTION[]="mzidfile,m";
+  const char MZIDFILE_TEST[]="mzidfile";
+  const char MZIDFILE_TEXT[]="MzIdentML input file\n";
+  const char MZIDOUTPUT_OPTION[]="output,o";
+  const char MZIDOUTPUT_TEST[]="output";
+  const char MZIDOUTPUT_TEXT[]="Outputs the results to original filename+[File]+.mzid.\n"
+                               "DEFAULT: output to stdout\n";
+  const char MZIDFILES_OPTION[]="filesmzid,f";
+  const char MZIDFILES_TEST[]="filesmzid";
+  const char MZIDFILES_TEXT[]="File containing a list of mzIdentML filenames\n";
+  const char DECOY_OPTION[]="decoy,d";
+  const char DECOY_TEST[]="decoy";
+  const char DECOY_TEXT[]="Only adds results to entries with decoy set to true. DEFAULT: false\n";
+  const char VALIDATION_OPTION[]="validate,v";
+  const char VALIDATION_TEST[]="validate";
+  const char VALIDATION_TEXT[]="Sets that validation of XML schema should not be performed. Faster parsing.\n";
+  const char WARNING_OPTION[]="warning,w";
+  const char WARNING_TEST[]="warning";
+  const char WARNING_TEXT[]="Sets that upon warning the software should terminate.\n";
+  }
+//------------------------------------------------------------------------------
+// strings used for reporting error messages, status
 //------------------------------------------------------------------------------
 namespace PRINT_TEXT {
   const char HELP[]="pout2mzid [OPTIONS]\n"

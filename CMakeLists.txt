@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(POUT2MZIML_VERSION_MAJOR "0")
 set(POUT2MZIML_VERSION_MINOR "2")
-set(POUT2MZIML_VERSION_PATCH "6")
+set(POUT2MZIML_VERSION_PATCH "7")
 
 configure_file( version_config.h.in ${CMAKE_BINARY_DIR}/version_config.h )
 
@@ -41,7 +41,7 @@ include_directories(${XSD_INCLUDE_DIR})
 
 SET (Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.41" "1.41.0" "1.39" "1.39.0" "1.42.0" "1.42" "1.43.0"
              "1.43." "1.44.0" "1.44.0" "1.45.0" "1.45" "1.46.0" "1.46" "1.47.0" "1.47")
-find_package(Boost COMPONENTS filesystem system REQUIRED)
+find_package(Boost COMPONENTS filesystem system program_options REQUIRED)
 if(Boost_FOUND)
   message(STATUS "Package Boost-${Boost_VERSION} found : ${Boost_INCLUDE_DIR}")
 else(Boost_FOUND)
