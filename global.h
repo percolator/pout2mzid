@@ -74,17 +74,6 @@ namespace CMDOPTIONS {
 // strings used for reporting error messages, status
 //------------------------------------------------------------------------------
 namespace PRINT_TEXT {
-  const char HELP[]="pout2mzid [OPTIONS]\n"
-                    "\nOPTIONS\n\n"
-                    "-h\t\t\tDisplays this help text.\n"
-                    "-p [PercolatorOut file]\tPercolator Out XML result file\n"
-                    "-m [mzIdentML file]\tMzIdentML input file\n"
-                    "-o [mzIdentML file end]\tOutputs the results to original filename [mzIdentML file end].\n"
-                    "\t\t\tIf [mzIdentML file end] is omitted _output will be added to filename. DEFAULT: output to stdout\n"
-                    "-f [file]\t\tFile containing a list of mzIdentML filenames\n"
-                    "-d\t\t\tOnly adds results to entries with decoy set to true. DEFAULT: false\n"
-                    "-v\t\t\tSets that validation of XML schema should not be performed. Faster parsing.\n"
-                    "-w\t\t\tSets that upon warning the software should terminate.";
   const char PERCOLATOR_FILE_NOT_ENTERED[]="Percolator out file has not been defined";
   const char MZID_FILE_NOT_ENTERED[]="mzIdentML file has not been defined";
   const char NO_PERCOLATOR_FILE[]="Percolator XML file %s does not exist";
