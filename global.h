@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 #define ARRAYSIZE(array) (sizeof(array)/sizeof(*(array)))
 #define THROW_ERROR(text) throw runtime_error(global::to_string(text))
@@ -39,6 +40,8 @@ namespace global {
     s1 << value;
     return s1.str();
     }
+
+  const int MAX_CHAR_SIZE=1000;
   }
 //------------------------------------------------------------------------------
 // strings used for options
@@ -89,8 +92,6 @@ namespace PRINT_TEXT {
   const char CANNOT_READ_MZID[]="Cannot read mzIdentML file XML Path";
   const char ELEMENT_NOT_FOUND_MZID[]="Element %s in mzIdentML file not found.";
   const char PSM_NOT_ENTERED[]="Warning: %s psm_id: %s not entered.";
-  const char READ_PSM[]="Read %d psm results.";
-  const char READ_PEPTIDE[]="Read %d peptide results.";
   const char TOTAL_READ[]="Total of %d results.";
   const char INSERTED[]="Inserted %d new values in the mzIdentML file.";
   }

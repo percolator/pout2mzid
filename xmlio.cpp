@@ -16,6 +16,7 @@
  *******************************************************************************/
 
 #include "xmlio.h"
+#include "pout_parser.h"
 
 //------------------------------------------------------------------------------
 PercolatorOutFeatures::PercolatorOutFeatures() {
@@ -108,52 +109,49 @@ string MzIDIO::setOutputFileName(int mzidfilenameid) {
   return filepath.replace_extension("").string()+outputfileending+filepath.extension().string();
   }
 //------------------------------------------------------------------------------
-bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values) {
-  int i1,vi1,n;
-  mzidXML::AnalysisDataType::SpectrumIdentificationList_iterator listit;
-  mzidXML::SpectrumIdentificationListType::SpectrumIdentificationResult_iterator resultit;
-  mzidXML::SpectrumIdentificationResultType::SpectrumIdentificationItem_iterator itemit;
-  ifstream fpi;
+bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
+  FILE *fpr,*fpw;
   string mzidname;
+  char s1[global::MAX_CHAR_SIZE],s2[global::MAX_CHAR_SIZE];
+  int i1,vi1,n;
 
   n=0;
   try {
     for (vi1=0; vi1<filename.size(); vi1++) {
-      fpi.open(filename[vi1].c_str(),ifstream::in);
       mzidname=boost::lexical_cast<boost::filesystem::path>(filename[vi1]).stem().string();
-      auto_ptr<mzidXML::MzIdentMLType> pmzid (mzidXML::MzIdentML(fpi, validatexml));
-      for (listit=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().begin();
-           listit!=pmzid->DataCollection().AnalysisData().SpectrumIdentificationList().end(); listit++)
-        for (resultit=listit->SpectrumIdentificationResult().begin();
-             resultit!=listit->SpectrumIdentificationResult().end(); resultit++)
-          for (itemit=resultit->SpectrumIdentificationItem().begin();
-               itemit!=resultit->SpectrumIdentificationItem().end(); itemit++) {
-            for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
-              if (pout_values.find(PercolatorOutFeatures(mzidname,itemit->id(),i1))==pout_values.end())
-                continue;
-              n++;
-              switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
-                case MZID_PARAM::USERPARAM: {
-                  auto_ptr<mzidXML::UserParamType> newuserparam (new mzidXML::UserParamType(MZID_PARAM::ELEMENT_DATA::NAMES[i1]));
-                  newuserparam->value(pout_values[PercolatorOutFeatures(mzidname,itemit->id(),i1)]);
-                  itemit->userParam().push_back(newuserparam);
-                  break;
-                  }
-                case MZID_PARAM::CVPARAM: {
-                  auto_ptr<mzidXML::CVParamType> newcvparam (new mzidXML::CVParamType(MZID_PARAM::ELEMENT_DATA::NAMES[i1],
-                                                                                      MZID_PARAM::ELEMENT_DATA::CVREFS[i1],
-                                                                                      MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1]));
-                  newcvparam->value(pout_values[PercolatorOutFeatures(mzidname,itemit->id(),i1)]);
-                  itemit->cvParam().push_back(newcvparam);
-                  break;
-                  }
+      fpr=fopen(filename[vi1].c_str(),"r");
+      fpw=fopen(setOutputFileName(vi1).c_str(),"w");
+      while (fgets(s1,global::MAX_CHAR_SIZE,fpr)!=NULL) {
+        fprintf(fpw,"%s",s1);
+        if (strstr(s1," id=\"")!=NULL && strstr(s1,"<SpectrumIdentificationItem ")!=NULL) {
+          strcpy(s2,strstr(s1," id=\"")+5);
+          *strchr(s2,'\"')=0;
+          for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
+            if (pout_values.find(PercolatorOutFeatures(mzidname,s2,i1))==pout_values.end())
+              continue;
+            n++;
+            switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
+              case MZID_PARAM::CVPARAM: {
+                fprintf(fpw,"<cvparam accession=\"%s\" cvref==\"%s\" name=\"%s\" value=\"%s\"/>\n",
+                        MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1].c_str(),
+                        MZID_PARAM::ELEMENT_DATA::CVREFS[i1].c_str(),
+                        MZID_PARAM::ELEMENT_DATA::NAMES[i1].c_str(),
+                        global::to_string(pout_values[PercolatorOutFeatures(mzidname,s2,i1)]).c_str());
+                break;
                 }
-              pout_values.erase(PercolatorOutFeatures(mzidname,itemit->id(),i1));
+              case MZID_PARAM::USERPARAM: {
+                fprintf(fpw,"<userparam name=\"%s\" value=\"%s\"/>\n",
+                        MZID_PARAM::ELEMENT_DATA::NAMES[i1].c_str(),
+                        global::to_string(pout_values[PercolatorOutFeatures(mzidname,s2,i1)]).c_str());
+                break;
+                }
               }
+            pout_values.erase(PercolatorOutFeatures(mzidname,s2,i1));
             }
-      fpi.close();
-      if (!saveMZIDFile(pmzid,vi1))
-        THROW_ERROR(PRINT_TEXT::CANNOT_SAVE);
+          }
+        }
+      fclose(fpr);
+      fclose(fpw);
       }
     clog << boost::format(PRINT_TEXT::INSERTED) % n << endl;
     for (boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>::iterator
@@ -161,39 +159,10 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
       cerr << boost::format(PRINT_TEXT::PSM_NOT_ENTERED) % it->first.filename % it->first.psmid << endl;
     return true;
     }
-  catch (xml_schema::expected_element &e) {
-    cerr << e << endl;
-    fpi.close();
-    return false;
-    }
-  catch(xml_schema::exception &e) {
-    cerr << e << endl;
-    fpi.close();
-    return false;
-    }
   catch (exception &e) {
     cerr << e.what() << endl;
-    fpi.close();
-    return false;
-    }
-  }
-//------------------------------------------------------------------------------
-bool MzIDIO::saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid, int mzidfilenameid) {
-  xml_schema::namespace_infomap map;
-  ofstream ofs;
-
-  try {
-    map[""].name=MZID_PARAM::SCHEMA_NAME;
-    map[""].schema=MZID_PARAM::SCHEMA;
-    if (outputfileending.length()>0)
-      ofs.open(setOutputFileName(mzidfilenameid).c_str());
-    mzidXML::MzIdentML(ofs.is_open()?ofs:cout, *pmzid, map,"UTF-8",validatexml);
-    ofs.close();
-    return true;
-    }
-  catch(exception &e) {
-    ofs.close();
-    cerr << e.what() << endl;
+    fclose(fpr);
+    fclose(fpw);
     return false;
     }
   }
@@ -225,62 +194,48 @@ void PercolatorOutI::setDecoy() {
   decoy=true;
   }
 //------------------------------------------------------------------------------
-bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
-  string psmid,psmidfile;
-  poutXML::psms::psm_const_iterator psmit;
-  poutXML::peptides::peptide_const_iterator peptideit;
-  poutXML::psm_ids::psm_id_const_iterator psmidsit;
-  ifstream fpi;
+bool PercolatorOutI::checkDecoy(bool decoy) {
+  return this->decoy==decoy;
+  }
+//------------------------------------------------------------------------------
+bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
+  poutXML::psms_pskel psms_p;
+  poutXML::peptides_pskel peptides_p;
+  poutXML::proteins_pskel proteins_p;
+  xml_schema::unsigned_short_pimpl u_short_p;
+  poutXML::percolator_output_pskel pout_p;
+  poutXML::process_info_pskel process_info_p;
+  xml_schema::double_pimpl double_p;
+  poutXML::retentionTime_pskel retentionTime_p;
+  poutXML::peptide_seq_pskel peptide_seq_p;
+  poutXML::aa_seq_t_pimpl aa_seq_t_p;
+  xml_schema::string_pimpl string_p;
+  xml_schema::boolean_pimpl boolean_p;
+  poutXML::psm_ids_pimpl psm_ids_p;
+  poutXML::peptide_pimpl peptide_p;
+  poutXML::psm_pimpl psm_p;
+  poutXML::probability_t_pimpl probability_t_p;
 
   try {
-    fpi.open(filename.c_str(),ifstream::in);
-    auto_ptr<poutXML::percolator_output> ppout (poutXML::percolator_output_(fpi,validatexml));
-    for (psmit=ppout->psms().psm().begin(); psmit!=ppout->psms().psm().end(); psmit++) {
-      if (decoy!=boost::lexical_cast<bool>(psmit->decoy()))
-        continue;
-      psmid=convertPSMID(psmit->psm_id());
-      if (psmid.length()==0)
-        THROW_ERROR_VALUE(PRINT_TEXT::WRONG_FORMAT_PSM,psmid);
-      psmidfile=convertPSMIDFileName(psmit->psm_id());
-      if (psmidfile.length()==0)
-        THROW_ERROR_VALUE(PRINT_TEXT::NO_UNIQUE_MZID_FILE,psmid);
-      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::SVM_SCORE)]=global::to_string(psmit->svm_score());
-      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::P_VALUE)]=global::to_string(psmit->p_value());
-      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::Q_VALUE)]=global::to_string(psmit->q_value());
-      pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEP)]=global::to_string(psmit->pep());
-      }
-    clog << boost::format(PRINT_TEXT::READ_PSM) % pout_values.size() << endl;
-    for (peptideit=ppout->peptides()->peptide().begin(); peptideit!=ppout->peptides()->peptide().end(); peptideit++) {
-      if (decoy!=boost::lexical_cast<bool>(peptideit->decoy()))
-        continue;
-      for (psmidsit=peptideit->psm_ids().psm_id().begin(); psmidsit!=peptideit->psm_ids().psm_id().end(); psmidsit++) {
-        psmid=convertPSMID(*psmidsit);
-        if (psmid.length()==0)
-          THROW_ERROR_VALUE(PRINT_TEXT::WRONG_FORMAT_PSM,psmid);
-        psmidfile=convertPSMIDFileName(*psmidsit);
-        if (psmidfile.length()==0)
-          THROW_ERROR_VALUE(PRINT_TEXT::NO_UNIQUE_MZID_FILE,psmid);
-        pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_Q_VALUE)]=global::to_string(peptideit->q_value());
-        pout_values[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_PEP)]=global::to_string(peptideit->pep());
-        }
-      }
+    psm_p.pre(this,&probability_t_p.probability_t,pout_values);
+    psm_ids_p.pre(this,&peptide_p.peptide_q_value,&peptide_p.peptide_pep,&peptide_p.peptide_decoy,pout_values);
+    peptide_p.pre(&probability_t_p.probability_t);
+    pout_p.parsers (process_info_p,psms_p,peptides_p,proteins_p,
+                    string_p,u_short_p,u_short_p);
+    psms_p.parsers (psm_p);
+    psm_p.parsers (double_p,probability_t_p,probability_t_p,double_p,double_p,retentionTime_p,
+                   peptide_seq_p,string_p,probability_t_p,string_p,boolean_p);
+    peptides_p.parsers(peptide_p);
+    peptide_p.parsers(double_p,probability_t_p,probability_t_p,double_p,double_p,retentionTime_p,
+                      string_p,probability_t_p,psm_ids_p,aa_seq_t_p,boolean_p);
+    psm_ids_p.parsers(string_p);
+    xml_schema::document doc_p (pout_p,PERCOLATOR_PARAM::SCHEMA_NAME,PERCOLATOR_PARAM::HEAD_TAG);
+    doc_p.parse (filename.c_str(),validatexml);
     clog << boost::format(PRINT_TEXT::TOTAL_READ) % pout_values.size() << endl;
-    fpi.close();
     return true;
-    }
-  catch (xml_schema::expected_element &e) {
-    cerr << e << endl;
-    fpi.close();
-    return false;
-    }
-  catch(xml_schema::exception &e) {
-    cerr << e << endl;
-    fpi.close();
-    return false;
     }
   catch (exception &e) {
     cerr << e.what() << endl;
-    fpi.close();
     return false;
     }
   }

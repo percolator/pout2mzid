@@ -5,6 +5,8 @@ in the percolator output file, and adds this information to a mzIdentML
 file. The software either outputs the new mzIdentMl file to standard output
 or to a file of your choosing.
 Decoy status flag filters the data.
+This version also acts as a stream parser, meaning the XML files will not
+be stored in memory, but rather stream from/to XML files.
 
 ***
 

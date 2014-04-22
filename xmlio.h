@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -29,9 +30,6 @@
 #include <boost/format.hpp>
 
 #include "global.h"
-#include "percolator_out.hxx"
-#include "mzIdentML1.1.0.hxx"
-
 //------------------------------------------------------------------------------
 using namespace std;
 //------------------------------------------------------------------------------
@@ -62,6 +60,8 @@ namespace MZID_PARAM {
   }
 //------------------------------------------------------------------------------
 namespace PERCOLATOR_PARAM {
+  const char SCHEMA_NAME[]="http://per-colator.com/percolator_out/15";
+  const char HEAD_TAG[]="percolator_output";
   const int N_DELIMINATOR_PSM_ID=3;
   const char PSMID_START[]="_SII";
   enum VALUES { SVM_SCORE,P_VALUE,Q_VALUE,PEP,PEPTIDE_Q_VALUE,PEPTIDE_PEP };
@@ -103,8 +103,7 @@ class MzIDIO : public XMLIO {
   bool checkFilenames();
   string getFirstFilename();
   string setOutputFileName(int mzidfilenameid);
-  bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values);
-  bool saveMZIDFile(auto_ptr<mzidXML::MzIdentMLType> &pmzid, int mzidfilenameid);
+  bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
   ~MzIDIO();
   };
 //------------------------------------------------------------------------------
@@ -119,7 +118,8 @@ class PercolatorOutI : public XMLIO {
   void setFirstMzIDFilename(string filename);
   bool noFilename();
   void setDecoy();
-  bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
+  bool checkDecoy(bool decoy);
+  bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
   string convertPSMIDFileName(string percolatorid);
   static string convertPSMID(string percolatorid);
   };

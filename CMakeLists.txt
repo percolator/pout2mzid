@@ -9,8 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ###############################################################################
 
 set(POUT2MZIML_VERSION_MAJOR "0")
-set(POUT2MZIML_VERSION_MINOR "2")
-set(POUT2MZIML_VERSION_PATCH "7")
+set(POUT2MZIML_VERSION_MINOR "3")
+set(POUT2MZIML_VERSION_PATCH "0")
 
 configure_file( version_config.h.in ${CMAKE_BINARY_DIR}/version_config.h )
 
@@ -57,24 +57,13 @@ link_directories(${Boost_INCLUDE_DIRS})
 MESSAGE( STATUS "Creating XSD files:" )
 
 # RUN CODESYNTHESIS TO GENERATE xsdfiles for pout (percolator output)
-set(percolator_out ${CMAKE_CURRENT_BINARY_DIR}/percolator_out.cxx ${CMAKE_CURRENT_BINARY_DIR}/percolator_out.hxx )
+set(percolator_out ${CMAKE_CURRENT_BINARY_DIR}/percolator_out-pskel.cxx ${CMAKE_CURRENT_BINARY_DIR}/percolator_out-pskel.hxx )
 set(percolator_out_xsd ${CMAKE_CURRENT_SOURCE_DIR}/xml/percolator_out.xsd)
 add_custom_command(
   OUTPUT ${percolator_out}
   COMMAND xsdcxx
-  ARGS cxx-tree --generate-polymorphic --generate-serialization --root-element-all --generate-ostream --namespace-map http://per-colator.com/percolator_out/15=poutXML ${percolator_out_xsd}
+  ARGS cxx-parser --generate-polymorphic --namespace-map http://per-colator.com/percolator_out/15=poutXML ${percolator_out_xsd}
   DEPENDS ${percolator_out_xsd}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-# RUN CODESYNTHESIS TO GENERATE xsdfiles for mzIdentML (mzIdentML)
-set(mzidentml_out ${CMAKE_CURRENT_BINARY_DIR}/mzIdentML1.1.0.cxx ${CMAKE_CURRENT_BINARY_DIR}/mzIdentML1.1.0.hxx )
-set(mzidentml_xsd ${CMAKE_CURRENT_SOURCE_DIR}/xml/mzIdentML1.1.0.xsd)
-add_custom_command(
-  OUTPUT ${mzidentml_out}
-  COMMAND xsdcxx
-  ARGS cxx-tree --generate-polymorphic --generate-serialization --root-element-all --generate-ostream --namespace-map http://psidev.info/psi/pi/mzIdentML/1.1=mzidXML ${mzidentml_xsd}
-  DEPENDS ${mzidentml_xsd}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

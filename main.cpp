@@ -17,6 +17,7 @@
 
 #include "version_config.h"
 #include "xmlio.h"
+#include "pout_parser.h"
 #include "boost/program_options.hpp"
 
 //------------------------------------------------------------------------------
