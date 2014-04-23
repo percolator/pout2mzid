@@ -22,15 +22,26 @@ namespace poutXML {
     virtual void _characters (const ::xml_schema::ro_string&);
     };
 //------------------------------------------------------------------------------
+  class peptide_pimpl: public virtual peptide_pskel {
+    public:
+    probability_t_pimpl* probability_p;
+    string pq_value;
+    string ppep;
+    bool pdecoy;
+
+    virtual void pre(probability_t_pimpl* probability_p);
+    virtual void q_value();
+    virtual void pep();
+    virtual void decoy(bool);
+    };
+//------------------------------------------------------------------------------
   class psm_ids_pimpl: public virtual psm_ids_pskel {
     public:
     PercolatorOutI* percolator;
+    peptide_pimpl* peptide_p;
     boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>* pout_values;
-    string* peptide_q_value;
-    string* peptide_pep;
-    bool* peptide_decoy;
 
-    virtual void pre(PercolatorOutI* percolator,string* peptide_q_value,string* peptide_pep,bool* peptide_decoy,
+    virtual void pre(PercolatorOutI* percolator,peptide_pimpl* peptide_p,
                      boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
     virtual void psm_id(const ::std::string&);
     virtual void post_psm_ids();
@@ -39,31 +50,18 @@ namespace poutXML {
   class psm_pimpl: public virtual psm_pskel {
     public:
     PercolatorOutI* percolator;
-    string* probability_t;
+    probability_t_pimpl* probability_p;
     boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>* pout_values;
     string psmid,psmidfile;
     bool psm_decoy;
 
-    virtual void pre(PercolatorOutI* percolator,string* probability_t,
+    virtual void pre(PercolatorOutI* percolator,probability_t_pimpl* probability_p,
                      boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
     virtual void svm_score(double);
     virtual void q_value();
     virtual void pep();
     virtual void p_value();
     virtual void psm_id (const ::std::string&);
-    virtual void decoy(bool);
-    };
-//------------------------------------------------------------------------------
-  class peptide_pimpl: public virtual peptide_pskel {
-    public:
-    string* probability_t;
-    string peptide_q_value;
-    string peptide_pep;
-    bool peptide_decoy;
-
-    virtual void pre(string* probability_t);
-    virtual void q_value();
-    virtual void pep();
     virtual void decoy(bool);
     };
 //------------------------------------------------------------------------------

@@ -112,42 +112,49 @@ string MzIDIO::setOutputFileName(int mzidfilenameid) {
 bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
   FILE *fpr,*fpw;
   string mzidname;
-  char s1[global::MAX_CHAR_SIZE],s2[global::MAX_CHAR_SIZE];
-  int i1,vi1,n;
+  char s1[global::MAX_CHAR_SIZE],psmid[global::MAX_CHAR_SIZE];
+  int i1,vi1,n,xmlindent;
 
   n=0;
+  psmid[0]=0;
   try {
     for (vi1=0; vi1<filename.size(); vi1++) {
       mzidname=boost::lexical_cast<boost::filesystem::path>(filename[vi1]).stem().string();
       fpr=fopen(filename[vi1].c_str(),"r");
       fpw=fopen(setOutputFileName(vi1).c_str(),"w");
       while (fgets(s1,global::MAX_CHAR_SIZE,fpr)!=NULL) {
-        fprintf(fpw,"%s",s1);
-        if (strstr(s1," id=\"")!=NULL && strstr(s1,"<SpectrumIdentificationItem ")!=NULL) {
-          strcpy(s2,strstr(s1," id=\"")+5);
-          *strchr(s2,'\"')=0;
+        if (strstr(s1,MZID_PARAM::END_INSERT_TAG)!=NULL) {
+          if (strlen(psmid)==0)
+            THROW_ERROR(PRINT_TEXT::CANNOT_INSERT);
           for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
-            if (pout_values.find(PercolatorOutFeatures(mzidname,s2,i1))==pout_values.end())
+            if (pout_values.find(PercolatorOutFeatures(mzidname,psmid,i1))==pout_values.end())
               continue;
             n++;
             switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
               case MZID_PARAM::CVPARAM: {
-                fprintf(fpw,"<cvparam accession=\"%s\" cvref==\"%s\" name=\"%s\" value=\"%s\"/>\n",
+                fprintf(fpw,MZID_PARAM::CVPARAM_TAG,string(xmlindent,' ').c_str(),
                         MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1].c_str(),
                         MZID_PARAM::ELEMENT_DATA::CVREFS[i1].c_str(),
                         MZID_PARAM::ELEMENT_DATA::NAMES[i1].c_str(),
-                        global::to_string(pout_values[PercolatorOutFeatures(mzidname,s2,i1)]).c_str());
+                        pout_values[PercolatorOutFeatures(mzidname,psmid,i1)].c_str());
                 break;
                 }
               case MZID_PARAM::USERPARAM: {
-                fprintf(fpw,"<userparam name=\"%s\" value=\"%s\"/>\n",
+                fprintf(fpw,MZID_PARAM::USERPARAM_TAG,string(xmlindent,' ').c_str(),
                         MZID_PARAM::ELEMENT_DATA::NAMES[i1].c_str(),
-                        global::to_string(pout_values[PercolatorOutFeatures(mzidname,s2,i1)]).c_str());
+                        pout_values[PercolatorOutFeatures(mzidname,psmid,i1)].c_str());
                 break;
                 }
               }
-            pout_values.erase(PercolatorOutFeatures(mzidname,s2,i1));
+            pout_values.erase(PercolatorOutFeatures(mzidname,psmid,i1));
             }
+          psmid[0]=0;
+          }
+        xmlindent=strspn(s1," ");
+        fprintf(fpw,"%s",s1);
+        if (strstr(s1,MZID_PARAM::PSMID_TAG)!=NULL && strstr(s1,MZID_PARAM::START_INSERT_TAG)!=NULL) {
+          strcpy(psmid,strstr(s1,MZID_PARAM::PSMID_TAG)+strlen(MZID_PARAM::PSMID_TAG));
+          *strchr(psmid,'\"')=0;
           }
         }
       fclose(fpr);
@@ -217,9 +224,9 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
   poutXML::probability_t_pimpl probability_t_p;
 
   try {
-    psm_p.pre(this,&probability_t_p.probability_t,pout_values);
-    psm_ids_p.pre(this,&peptide_p.peptide_q_value,&peptide_p.peptide_pep,&peptide_p.peptide_decoy,pout_values);
-    peptide_p.pre(&probability_t_p.probability_t);
+    psm_p.pre(this,&probability_t_p,pout_values);
+    psm_ids_p.pre(this,&peptide_p,pout_values);
+    peptide_p.pre(&probability_t_p);
     pout_p.parsers (process_info_p,psms_p,peptides_p,proteins_p,
                     string_p,u_short_p,u_short_p);
     psms_p.parsers (psm_p);
@@ -229,8 +236,8 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
     peptide_p.parsers(double_p,probability_t_p,probability_t_p,double_p,double_p,retentionTime_p,
                       string_p,probability_t_p,psm_ids_p,aa_seq_t_p,boolean_p);
     psm_ids_p.parsers(string_p);
-    xml_schema::document doc_p (pout_p,PERCOLATOR_PARAM::SCHEMA_NAME,PERCOLATOR_PARAM::HEAD_TAG);
-    doc_p.parse (filename.c_str(),validatexml);
+    xml_schema::document doc_p(pout_p,PERCOLATOR_PARAM::SCHEMA_NAME,PERCOLATOR_PARAM::HEAD_TAG);
+    doc_p.parse(filename.c_str(),validatexml);
     clog << boost::format(PRINT_TEXT::TOTAL_READ) % pout_values.size() << endl;
     return true;
     }

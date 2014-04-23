@@ -41,6 +41,11 @@ using namespace std;
 namespace MZID_PARAM {
   const char SCHEMA_NAME[]="http://psidev.info/psi/pi/mzIdentML/1.1";
   const char SCHEMA[]="mzIdentML1.1.0.xsd";
+  const char START_INSERT_TAG[]="<SpectrumIdentificationItem ";
+  const char END_INSERT_TAG[]="</SpectrumIdentificationItem>";
+  const char PSMID_TAG[]=" id=\"";
+  const char CVPARAM_TAG[]="%s<cvparam accession=\"%s\" cvref==\"%s\" name=\"%s\" value=\"%s\"/>\n";
+  const char USERPARAM_TAG[]="%s<userparam name=\"%s\" value=\"%s\"/>\n";
   enum ELEMENT_TYPE { USERPARAM,CVPARAM };
 
   namespace ELEMENT_DATA {
