@@ -88,6 +88,7 @@ namespace PRINT_TEXT {
   const char WRONG_FORMAT_PSM[]="Psm ID %s in percolator out file has the wrong format";
   const char NO_UNIQUE_MZID_FILE[]="Percolator out file does not contain MzID file ID, on mutiple MzID files";
   const char CANNOT_INSERT[]="Cannot insert new percolator out values into mzIdentML file";
+  const char BAD_XML[]="Badly formed XML structure in %s mzIdentML file";
   const char CANNOT_SAVE[]="Cannot save mzIdentML file";
   const char CANNOT_READ_MZID[]="Cannot read mzIdentML file XML Path";
   const char ELEMENT_NOT_FOUND_MZID[]="Element %s in mzIdentML file not found.";

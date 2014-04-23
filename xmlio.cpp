@@ -76,7 +76,7 @@ bool MzIDIO::addFilenames(string filenamefile) {
 
   if (!boost::filesystem::exists(filenamefile.c_str()))
     return false;
-  fp1.open(filenamefile.c_str());
+  fp1.open(filenamefile.c_str(),ifstream::in);
   while (!fp1.eof()) {
     getline(fp1,s1);
     if (s1.length()==0)
@@ -110,55 +110,55 @@ string MzIDIO::setOutputFileName(int mzidfilenameid) {
   }
 //------------------------------------------------------------------------------
 bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
-  FILE *fpr,*fpw;
-  string mzidname;
-  char s1[global::MAX_CHAR_SIZE],psmid[global::MAX_CHAR_SIZE];
+  ifstream fpr;
+  ofstream fpw;
+  string mzidname,s1,psmid;
   int i1,vi1,n,xmlindent;
 
   n=0;
-  psmid[0]=0;
+  psmid="";
   try {
     for (vi1=0; vi1<filename.size(); vi1++) {
       mzidname=boost::lexical_cast<boost::filesystem::path>(filename[vi1]).stem().string();
-      fpr=fopen(filename[vi1].c_str(),"r");
-      fpw=fopen(setOutputFileName(vi1).c_str(),"w");
-      while (fgets(s1,global::MAX_CHAR_SIZE,fpr)!=NULL) {
-        if (strstr(s1,MZID_PARAM::END_INSERT_TAG)!=NULL) {
-          if (strlen(psmid)==0)
-            THROW_ERROR(PRINT_TEXT::CANNOT_INSERT);
+      fpr.open(filename[vi1].c_str());
+      fpw.open(setOutputFileName(vi1).c_str());
+      while (getline(fpr,s1)) {
+        if (s1.find(MZID_PARAM::END_INSERT_TAG)!=string::npos) {
+          if (psmid.length()==0)
+            THROW_ERROR_VALUE(PRINT_TEXT::BAD_XML,filename[vi1]);
           for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
             if (pout_values.find(PercolatorOutFeatures(mzidname,psmid,i1))==pout_values.end())
               continue;
             n++;
             switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
               case MZID_PARAM::CVPARAM: {
-                fprintf(fpw,MZID_PARAM::CVPARAM_TAG,string(xmlindent,' ').c_str(),
-                        MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1].c_str(),
-                        MZID_PARAM::ELEMENT_DATA::CVREFS[i1].c_str(),
-                        MZID_PARAM::ELEMENT_DATA::NAMES[i1].c_str(),
-                        pout_values[PercolatorOutFeatures(mzidname,psmid,i1)].c_str());
+                fpw << boost::format(MZID_PARAM::CVPARAM_TAG) % string(xmlindent,' ')
+                        % MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1]
+                        % MZID_PARAM::ELEMENT_DATA::CVREFS[i1]
+                        % MZID_PARAM::ELEMENT_DATA::NAMES[i1]
+                        % pout_values[PercolatorOutFeatures(mzidname,psmid,i1)];
                 break;
                 }
               case MZID_PARAM::USERPARAM: {
-                fprintf(fpw,MZID_PARAM::USERPARAM_TAG,string(xmlindent,' ').c_str(),
-                        MZID_PARAM::ELEMENT_DATA::NAMES[i1].c_str(),
-                        pout_values[PercolatorOutFeatures(mzidname,psmid,i1)].c_str());
+                fpw << boost::format(MZID_PARAM::USERPARAM_TAG) % string(xmlindent,' ')
+                        % MZID_PARAM::ELEMENT_DATA::NAMES[i1]
+                        % pout_values[PercolatorOutFeatures(mzidname,psmid,i1)];
                 break;
                 }
               }
             pout_values.erase(PercolatorOutFeatures(mzidname,psmid,i1));
             }
-          psmid[0]=0;
+          psmid="";
           }
-        xmlindent=strspn(s1," ");
-        fprintf(fpw,"%s",s1);
-        if (strstr(s1,MZID_PARAM::PSMID_TAG)!=NULL && strstr(s1,MZID_PARAM::START_INSERT_TAG)!=NULL) {
-          strcpy(psmid,strstr(s1,MZID_PARAM::PSMID_TAG)+strlen(MZID_PARAM::PSMID_TAG));
-          *strchr(psmid,'\"')=0;
+        xmlindent=s1.find_first_not_of(" ");
+        fpw << s1 << endl;
+        if (s1.find(MZID_PARAM::PSMID_TAG)!=string::npos && s1.find(MZID_PARAM::START_INSERT_TAG)!=string::npos) {
+          i1=s1.find(MZID_PARAM::PSMID_TAG)+strlen(MZID_PARAM::PSMID_TAG);
+          psmid=s1.substr(i1,s1.find("\"",i1)-i1);
           }
         }
-      fclose(fpr);
-      fclose(fpw);
+      fpr.close();
+      fpw.close();
       }
     clog << boost::format(PRINT_TEXT::INSERTED) % n << endl;
     for (boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>::iterator
@@ -168,8 +168,8 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
     }
   catch (exception &e) {
     cerr << e.what() << endl;
-    fclose(fpr);
-    fclose(fpw);
+    fpr.close();
+    fpw.close();
     return false;
     }
   }
