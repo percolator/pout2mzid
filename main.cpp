@@ -37,39 +37,47 @@ int main(int argc, char **argv) {
   prgm_opt::options_description options("Options");
 
   try {
-    prgm_opt::arg="[File]";
+    prgm_opt::arg="[Value]";
     options.add_options()
-      (CMDOPTIONS::HELP_OPTION,CMDOPTIONS::HELP_TEXT)
-      (CMDOPTIONS::PERCOLATORFILE_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::PERCOLATORFILE_TEXT)
-      (CMDOPTIONS::MZIDFILE_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILE_TEXT)
-      (CMDOPTIONS::MZIDOUTPUT_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDOUTPUT_TEXT)
-      (CMDOPTIONS::MZIDFILES_OPTION,prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILES_TEXT)
-      (CMDOPTIONS::DECOY_OPTION,CMDOPTIONS::DECOY_TEXT)
-      (CMDOPTIONS::VALIDATION_OPTION,CMDOPTIONS::VALIDATION_TEXT)
-      (CMDOPTIONS::WARNING_OPTION,CMDOPTIONS::WARNING_TEXT);
+      (CMDOPTIONS::HELP_OPTION[0],CMDOPTIONS::HELP_OPTION[2])
+      (CMDOPTIONS::PERCOLATORFILE_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::PERCOLATORFILE_OPTION[2])
+      (CMDOPTIONS::MZIDFILE_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILE_OPTION[2])
+      (CMDOPTIONS::INPUTDIR_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::INPUTDIR_OPTION[2])
+      (CMDOPTIONS::MZIDOUTPUT_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDOUTPUT_OPTION[2])
+      (CMDOPTIONS::OUTPUTDIR_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::OUTPUTDIR_OPTION[2])
+      (CMDOPTIONS::MZIDFILES_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILES_OPTION[2])
+      (CMDOPTIONS::DECOY_OPTION[0],CMDOPTIONS::DECOY_OPTION[2])
+      (CMDOPTIONS::VALIDATION_OPTION[0],CMDOPTIONS::VALIDATION_OPTION[2])
+      (CMDOPTIONS::WARNING_OPTION[0],CMDOPTIONS::WARNING_OPTION[2]);
     prgm_opt::store(prgm_opt::parse_command_line(argc,argv,options),option_map);
-    if (option_map.count(CMDOPTIONS::HELP_TEST)) {
+    if (option_map.count(CMDOPTIONS::HELP_OPTION[1])) {
       printVersion();
       cout << options;
       CleanUp(EXIT_SUCCESS);
       }
-    if (option_map.count(CMDOPTIONS::DECOY_TEST))
+    if (option_map.count(CMDOPTIONS::DECOY_OPTION[1]))
       percolator.setDecoy();
-    if (option_map.count(CMDOPTIONS::VALIDATION_TEST)) {
+    if (option_map.count(CMDOPTIONS::VALIDATION_OPTION[1])) {
       percolator.unsetValidation();
       mzid.unsetValidation();
       }
-    if (option_map.count(CMDOPTIONS::MZIDOUTPUT_TEST))
-      mzid.setOutputFileEnding(option_map[CMDOPTIONS::MZIDOUTPUT_TEST].as<string>());
-    if (option_map.count(CMDOPTIONS::PERCOLATORFILE_TEST))
-      if (!percolator.setFilename(option_map[CMDOPTIONS::PERCOLATORFILE_TEST].as<string>()))
-        THROW_ERROR_VALUE(PRINT_TEXT::NO_PERCOLATOR_FILE,option_map[CMDOPTIONS::PERCOLATORFILE_TEST].as<string>());
-    if (option_map.count(CMDOPTIONS::MZIDFILE_TEST))
-      mzid.setFilename(option_map[CMDOPTIONS::MZIDFILE_TEST].as<string>());
-    if (option_map.count(CMDOPTIONS::MZIDFILES_TEST))
-      if (!mzid.addFilenames(option_map[CMDOPTIONS::MZIDFILES_TEST].as<string>()))
-        THROW_ERROR_VALUE(PRINT_TEXT::NO_MZID_FILE,option_map[CMDOPTIONS::MZIDFILES_TEST].as<string>());
-    if (option_map.count(CMDOPTIONS::WARNING_TEST))
+    if (option_map.count(CMDOPTIONS::MZIDOUTPUT_OPTION[1]))
+      mzid.setOutputFileEnding(option_map[CMDOPTIONS::MZIDOUTPUT_OPTION[1]].as<string>());
+    if (option_map.count(CMDOPTIONS::INPUTDIR_OPTION[1]))
+      if (!mzid.setInputDirectory(option_map[CMDOPTIONS::INPUTDIR_OPTION[1]].as<string>()))
+        THROW_ERROR(PRINT_TEXT::MZIDINPUTDIR_NOT_FOUND);
+    if (option_map.count(CMDOPTIONS::OUTPUTDIR_OPTION[1]))
+      if (!mzid.setOutputDirectory(option_map[CMDOPTIONS::OUTPUTDIR_OPTION[1]].as<string>()))
+        THROW_ERROR(PRINT_TEXT::MZIDOUTPUTDIR_NOT_CREATED);
+    if (option_map.count(CMDOPTIONS::PERCOLATORFILE_OPTION[1]))
+      if (!percolator.setFilename(option_map[CMDOPTIONS::PERCOLATORFILE_OPTION[1]].as<string>()))
+        THROW_ERROR_VALUE(PRINT_TEXT::NO_PERCOLATOR_FILE,option_map[CMDOPTIONS::PERCOLATORFILE_OPTION[1]].as<string>());
+    if (option_map.count(CMDOPTIONS::MZIDFILE_OPTION[1]))
+      mzid.setFilename(option_map[CMDOPTIONS::MZIDFILE_OPTION[1]].as<string>());
+    if (option_map.count(CMDOPTIONS::MZIDFILES_OPTION[1]))
+      if (!mzid.addFilenames(option_map[CMDOPTIONS::MZIDFILES_OPTION[1]].as<string>()))
+        THROW_ERROR_VALUE(PRINT_TEXT::NO_MZID_FILE,option_map[CMDOPTIONS::MZIDFILES_OPTION[1]].as<string>());
+    if (option_map.count(CMDOPTIONS::WARNING_OPTION[1]))
        mzid.unsetWarningFlag();
     if (!mzid.checkFilenames())
       CleanUp(EXIT_FAILURE);

@@ -96,12 +96,14 @@ class XMLIO {
 class MzIDIO : public XMLIO {
   private:
   vector<string> filename;
-  string outputfileending;
+  string outputfileending,outputdir,inputdir;
   bool warning;
 
   public:
   MzIDIO();
   void setOutputFileEnding(string fileending);
+  bool setOutputDirectory(string outputdir);
+  bool setInputDirectory(string inputdir);
   void unsetWarningFlag();
   void setFilename(string filename);
   bool addFilenames(string filenamefile);

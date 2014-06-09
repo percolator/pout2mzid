@@ -47,31 +47,17 @@ namespace global {
 // strings used for options
 //------------------------------------------------------------------------------
 namespace CMDOPTIONS {
-  const char HELP_OPTION[]="help,h";
-  const char HELP_TEST[]="help";
-  const char HELP_TEXT[]="Displays available commands\n";
-  const char PERCOLATORFILE_OPTION[]="percolatorfile,p";
-  const char PERCOLATORFILE_TEST[]="percolatorfile";
-  const char PERCOLATORFILE_TEXT[]="Percolator Out XML result file\n";
-  const char MZIDFILE_OPTION[]="mzidfile,m";
-  const char MZIDFILE_TEST[]="mzidfile";
-  const char MZIDFILE_TEXT[]="MzIdentML input file\n";
-  const char MZIDOUTPUT_OPTION[]="output,o";
-  const char MZIDOUTPUT_TEST[]="output";
-  const char MZIDOUTPUT_TEXT[]="Outputs the results to original filename+[File]+.mzid.\n"
-                               "DEFAULT: output to stdout\n";
-  const char MZIDFILES_OPTION[]="filesmzid,f";
-  const char MZIDFILES_TEST[]="filesmzid";
-  const char MZIDFILES_TEXT[]="File containing a list of mzIdentML filenames\n";
-  const char DECOY_OPTION[]="decoy,d";
-  const char DECOY_TEST[]="decoy";
-  const char DECOY_TEXT[]="Only adds results to entries with decoy set to true. DEFAULT: false\n";
-  const char VALIDATION_OPTION[]="validate,v";
-  const char VALIDATION_TEST[]="validate";
-  const char VALIDATION_TEXT[]="Sets that validation of XML schema should not be performed. Faster parsing.\n";
-  const char WARNING_OPTION[]="warning,w";
-  const char WARNING_TEST[]="warning";
-  const char WARNING_TEXT[]="Sets that upon warning the software should terminate.\n";
+  const char* const HELP_OPTION[]={"help,h","help","Displays available commands\n"};
+  const char* const PERCOLATORFILE_OPTION[]={"percolatorfile,p","percolatorfile","Percolator Out XML result file\n"};
+  const char* const MZIDFILE_OPTION[]={"mzidfile,m","mzidfile","MzIdentML input file\n"};
+  const char* const MZIDOUTPUT_OPTION[]={"changeoutput,c","changeoutput","Change the outputfile to original filename+[Value]+.mzid.\n"
+                                          "DEFAULT: output to stdout\n"};
+  const char* const MZIDFILES_OPTION[]={"filesmzid,f","filesmzid","File containing a list of mzIdentML filenames\n"};
+  const char* const DECOY_OPTION[]={"decoy,d","decoy","Only adds results to entries with decoy set to true. DEFAULT: false\n"};
+  const char* const VALIDATION_OPTION[]={"validate,v","validate","Sets that validation of XML schema should not be performed. Faster parsing.\n"};
+  const char* const WARNING_OPTION[]={"warning,w","warning","Sets that upon warning the software should terminate.\n"};
+  const char* const OUTPUTDIR_OPTION[]={"outputdir,o","outputdir","Sets the output directory if none exist, it will be created.\n"};
+  const char* const INPUTDIR_OPTION[]={"inputdir,i","inputdir","Sets the mzIdentML input directory. All mzIdentML inputfiles must be in that directory\n"};
   }
 //------------------------------------------------------------------------------
 // strings used for reporting error messages, status
@@ -81,6 +67,8 @@ namespace PRINT_TEXT {
   const char MZID_FILE_NOT_ENTERED[]="mzIdentML file has not been defined";
   const char NO_PERCOLATOR_FILE[]="Percolator XML file %s does not exist";
   const char NO_MZID_FILE[]="mzIdentML file %s does not exist";
+  const char MZIDOUTPUTDIR_NOT_CREATED[]="Outputdirectory did not exist, and could not be created";
+  const char MZIDINPUTDIR_NOT_FOUND[]="Input direcotory for mzIdentML file(s) does not exist";
   const char CANNOT_LOAD[]="Cannot load file %s";
   const char CANNOT_LOAD_PERCOLATOR_FILE[]="Cannot read percolator out file XML Path";
   const char BAD_PATH[]="Bad path in file %s";

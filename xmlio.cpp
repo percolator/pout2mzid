@@ -55,11 +55,25 @@ void XMLIO::unsetValidation() {
 //------------------------------------------------------------------------------
 MzIDIO::MzIDIO() {
   outputfileending="";
+  outputdir="";
+  inputdir="";
   warning=true;
   }
 //------------------------------------------------------------------------------
 void MzIDIO::setOutputFileEnding(string fileending) {
-  outputfileending=fileending;
+  this->outputfileending=fileending;
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::setOutputDirectory(string outputdir) {
+  this->outputdir=outputdir;
+  if (!boost::filesystem::is_directory(outputdir.c_str()))
+    return boost::filesystem::create_directory(outputdir.c_str());
+  return true;
+  }
+//------------------------------------------------------------------------------
+bool MzIDIO::setInputDirectory(string inputdir) {
+  this->inputdir=inputdir;
+  return boost::filesystem::is_directory(inputdir.c_str());
   }
 //------------------------------------------------------------------------------
 void MzIDIO::unsetWarningFlag() {
@@ -92,11 +106,15 @@ bool MzIDIO::checkFilenames() {
   bool b1;
 
   b1=true;
-  for (i1=0; i1<filename.size(); i1++)
-    if (!boost::filesystem::exists(filename[i1].c_str())) {
+  for (i1=0; i1<filename.size(); i1++) {
+    if (inputdir.length()>0)
+      filename[i1]=(boost::lexical_cast<boost::filesystem::path>(inputdir)/
+      (boost::lexical_cast<boost::filesystem::path>(filename[i1])).filename()).string();
+    if (!boost::filesystem::exists(filename[i1])) {
       cerr << boost::format(PRINT_TEXT::NO_MZID_FILE) % filename[i1] << endl;
       b1=false;
       }
+    }
   return b1 || warning;
   }
 //------------------------------------------------------------------------------
@@ -106,6 +124,8 @@ string MzIDIO::getFirstFilename() {
 //------------------------------------------------------------------------------
 string MzIDIO::setOutputFileName(int mzidfilenameid) {
   boost::filesystem::path filepath(filename[mzidfilenameid]);
+  if (outputdir.length()>0)
+    filepath=boost::lexical_cast<boost::filesystem::path>(outputdir)/filepath.filename();
   return filepath.replace_extension("").string()+outputfileending+filepath.extension().string();
   }
 //------------------------------------------------------------------------------
