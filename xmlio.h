@@ -44,8 +44,8 @@ namespace MZID_PARAM {
   const char START_INSERT_TAG[]="<SpectrumIdentificationItem ";
   const char END_INSERT_TAG[]="</SpectrumIdentificationItem>";
   const char PSMID_TAG[]=" id=\"";
-  const char CVPARAM_TAG[]="%s<cvparam accession=\"%s\" cvref==\"%s\" name=\"%s\" value=\"%s\"/>\n";
-  const char USERPARAM_TAG[]="%s<userparam name=\"%s\" value=\"%s\"/>\n";
+  const char CVPARAM_TAG[]="%s<cvParam accession=\"%s\" cvref==\"%s\" name=\"%s\" value=\"%s\"/>\n";
+  const char USERPARAM_TAG[]="%s<userParam name=\"%s\" value=\"%s\"/>\n";
   enum ELEMENT_TYPE { USERPARAM,CVPARAM };
 
   namespace ELEMENT_DATA {
