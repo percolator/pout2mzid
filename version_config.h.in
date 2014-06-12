@@ -2,14 +2,18 @@
 #define VERSION_CONFIG_H
 
 #include <stdio.h>
+#include <boost/format.hpp>
 
 // define your version
 #define VERSION_MAJOR @POUT2MZIML_VERSION_MAJOR@
 #define VERSION_MINOR @POUT2MZIML_VERSION_MINOR@
 #define VERSION_PATCH @POUT2MZIML_VERSION_PATCH@
-
+//------------------------------------------------------------------------------
 void printVersion () {
-  printf("xsdpout2mziml V%d.%d.%d\n",VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH);
+  std::cout << boost::format("pout2mzid V%d.%d.%d\n")
+          % VERSION_MAJOR
+          % VERSION_MINOR
+          % VERSION_PATCH;
   }
-
+//------------------------------------------------------------------------------
 #endif // VERSION_CONFIG_H
