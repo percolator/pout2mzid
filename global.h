@@ -47,17 +47,17 @@ namespace global {
 // strings used for options
 //------------------------------------------------------------------------------
 namespace CMDOPTIONS {
-  const char* const HELP_OPTION[]={"help,h","help","Displays available commands\n"};
-  const char* const PERCOLATORFILE_OPTION[]={"percolatorfile,p","percolatorfile","Percolator Out XML result file\n"};
-  const char* const MZIDFILE_OPTION[]={"mzidfile,m","mzidfile","MzIdentML input file\n"};
-  const char* const MZIDOUTPUT_OPTION[]={"changeoutput,c","changeoutput","Change the outputfile to original filename+[Value]+.mzid.\n"
+  const char *const HELP_OPTION[]={"help,h","help","Displays available commands\n"};
+  const char *const PERCOLATORFILE_OPTION[]={"percolatorfile,p","percolatorfile","Percolator Out XML result file\n"};
+  const char *const MZIDFILE_OPTION[]={"mzidfile,m","mzidfile","MzIdentML input file\n"};
+  const char *const MZIDOUTPUT_OPTION[]={"changeoutput,c","changeoutput","Change the outputfile to original filename+[Value]+.mzid.\n"
                                           "DEFAULT: output to stdout\n"};
-  const char* const MZIDFILES_OPTION[]={"filesmzid,f","filesmzid","File containing a list of mzIdentML filenames\n"};
-  const char* const DECOY_OPTION[]={"decoy,d","decoy","Only adds results to entries with decoy set to true. DEFAULT: false\n"};
-  const char* const VALIDATION_OPTION[]={"validate,v","validate","Sets that validation of XML schema should not be performed. Faster parsing.\n"};
-  const char* const WARNING_OPTION[]={"warning,w","warning","Sets that upon warning the software should terminate.\n"};
-  const char* const OUTPUTDIR_OPTION[]={"outputdir,o","outputdir","Sets the output directory if none exist, it will be created.\n"};
-  const char* const INPUTDIR_OPTION[]={"inputdir,i","inputdir","Sets the mzIdentML input directory. All mzIdentML inputfiles must be in that directory\n"};
+  const char *const MZIDFILES_OPTION[]={"filesmzid,f","filesmzid","File containing a list of mzIdentML filenames\n"};
+  const char *const DECOY_OPTION[]={"decoy,d","decoy","Only adds results to entries with decoy set to true. DEFAULT: false\n"};
+  const char *const VALIDATION_OPTION[]={"validate,v","validate","Sets that validation of XML schema should not be performed. Faster parsing.\n"};
+  const char *const WARNING_OPTION[]={"warning,w","warning","Sets that upon warning the software should terminate.\n"};
+  const char *const OUTPUTDIR_OPTION[]={"outputdir,o","outputdir","Sets the output directory if none exist, it will be created.\n"};
+  const char *const INPUTDIR_OPTION[]={"inputdir,i","inputdir","Sets the mzIdentML input directory. All mzIdentML inputfiles must be in that directory\n"};
   }
 //------------------------------------------------------------------------------
 // strings used for reporting error messages, status

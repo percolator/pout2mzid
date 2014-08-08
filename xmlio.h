@@ -80,8 +80,8 @@ class PercolatorOutFeatures {
 
   PercolatorOutFeatures();
   PercolatorOutFeatures(string filename, string psmid, int parameter);
-  bool operator==(PercolatorOutFeatures const& p) const;
-  size_t operator()(PercolatorOutFeatures const& p) const;
+  bool operator==(PercolatorOutFeatures const &p) const;
+  size_t operator()(PercolatorOutFeatures const &p) const;
   };
 //------------------------------------------------------------------------------
 class XMLIO {
@@ -110,7 +110,7 @@ class MzIDIO : public XMLIO {
   bool checkFilenames();
   string getFirstFilename();
   string setOutputFileName(int mzidfilenameid);
-  bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
+  bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
   ~MzIDIO();
   };
 //------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ class PercolatorOutI : public XMLIO {
   bool noFilename();
   void setDecoy();
   bool checkDecoy(bool decoy);
-  bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
+  bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
   string convertPSMIDFileName(string percolatorid);
   static string convertPSMID(string percolatorid);
   };

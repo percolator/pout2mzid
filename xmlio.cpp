@@ -31,13 +31,13 @@ PercolatorOutFeatures::PercolatorOutFeatures(string filename, string psmid, int 
   this->parameter=parameter;
   }
 //------------------------------------------------------------------------------
-bool PercolatorOutFeatures::operator==(PercolatorOutFeatures const& p) const {
+bool PercolatorOutFeatures::operator==(PercolatorOutFeatures const &p) const {
   return this->filename.compare(p.filename)==0 &&
          this->psmid.compare(p.psmid)==0 &&
          this->parameter==p.parameter;
   }
 //------------------------------------------------------------------------------
-size_t PercolatorOutFeatures::operator()(PercolatorOutFeatures const& p) const {
+size_t PercolatorOutFeatures::operator()(PercolatorOutFeatures const &p) const {
   size_t seed=0;
   boost::hash_combine(seed,p.filename);
   boost::hash_combine(seed,p.psmid);
@@ -129,9 +129,10 @@ string MzIDIO::setOutputFileName(int mzidfilenameid) {
   return filepath.replace_extension("").string()+outputfileending+filepath.extension().string();
   }
 //------------------------------------------------------------------------------
-bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
+bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
   ifstream fpr;
   ofstream fpw;
+  ostream *wout;
   string mzidname,s1,psmid;
   int i1,vi1,n,xmlindent;
 
@@ -141,7 +142,12 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
     for (vi1=0; vi1<filename.size(); vi1++) {
       mzidname=boost::lexical_cast<boost::filesystem::path>(filename[vi1]).stem().string();
       fpr.open(filename[vi1].c_str());
-      fpw.open(setOutputFileName(vi1).c_str());
+      if (outputfileending.length()>0) {
+        fpw.open(setOutputFileName(vi1).c_str());
+        wout=&fpw;
+        }
+      else
+        wout=&cout;
       while (getline(fpr,s1)) {
         if (s1.find(MZID_PARAM::END_INSERT_TAG)!=string::npos) {
           if (psmid.length()==0)
@@ -152,7 +158,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
             n++;
             switch (MZID_PARAM::ELEMENT_DATA::ELEMENTS[i1]) {
               case MZID_PARAM::CVPARAM: {
-                fpw << boost::format(MZID_PARAM::CVPARAM_TAG) % string(xmlindent,' ')
+                *wout << boost::format(MZID_PARAM::CVPARAM_TAG) % string(xmlindent,' ')
                         % MZID_PARAM::ELEMENT_DATA::ACCESSIONS[i1]
                         % MZID_PARAM::ELEMENT_DATA::CVREFS[i1]
                         % MZID_PARAM::ELEMENT_DATA::NAMES[i1]
@@ -160,7 +166,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
                 break;
                 }
               case MZID_PARAM::USERPARAM: {
-                fpw << boost::format(MZID_PARAM::USERPARAM_TAG) % string(xmlindent,' ')
+                *wout << boost::format(MZID_PARAM::USERPARAM_TAG) % string(xmlindent,' ')
                         % MZID_PARAM::ELEMENT_DATA::NAMES[i1]
                         % pout_values[PercolatorOutFeatures(mzidname,psmid,i1)];
                 break;
@@ -171,7 +177,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
           psmid="";
           }
         xmlindent=s1.find_first_not_of(" ");
-        fpw << s1 << endl;
+        *wout << s1 << endl;
         if (s1.find(MZID_PARAM::PSMID_TAG)!=string::npos && s1.find(MZID_PARAM::START_INSERT_TAG)!=string::npos) {
           i1=s1.find(MZID_PARAM::PSMID_TAG)+strlen(MZID_PARAM::PSMID_TAG);
           psmid=s1.substr(i1,s1.find("\"",i1)-i1);
@@ -225,7 +231,7 @@ bool PercolatorOutI::checkDecoy(bool decoy) {
   return this->decoy==decoy;
   }
 //------------------------------------------------------------------------------
-bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
+bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
   poutXML::psms_pskel psms_p;
   poutXML::peptides_pskel peptides_p;
   poutXML::proteins_pskel proteins_p;

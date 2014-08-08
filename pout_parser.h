@@ -24,12 +24,12 @@ namespace poutXML {
 //------------------------------------------------------------------------------
   class peptide_pimpl: public virtual peptide_pskel {
     public:
-    probability_t_pimpl* probability_p;
+    probability_t_pimpl *probability_p;
     string pq_value;
     string ppep;
     bool pdecoy;
 
-    virtual void pre(probability_t_pimpl* probability_p);
+    virtual void pre(probability_t_pimpl *probability_p);
     virtual void q_value();
     virtual void pep();
     virtual void decoy(bool);
@@ -37,26 +37,26 @@ namespace poutXML {
 //------------------------------------------------------------------------------
   class psm_ids_pimpl: public virtual psm_ids_pskel {
     public:
-    PercolatorOutI* percolator;
-    peptide_pimpl* peptide_p;
-    boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>* pout_values;
+    PercolatorOutI *percolator;
+    peptide_pimpl *peptide_p;
+    boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> *pout_values;
 
-    virtual void pre(PercolatorOutI* percolator,peptide_pimpl* peptide_p,
-                     boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
+    virtual void pre(PercolatorOutI *percolator,peptide_pimpl *peptide_p,
+                     boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
     virtual void psm_id(const ::std::string&);
     virtual void post_psm_ids();
     };
 //------------------------------------------------------------------------------
   class psm_pimpl: public virtual psm_pskel {
     public:
-    PercolatorOutI* percolator;
+    PercolatorOutI *percolator;
     probability_t_pimpl* probability_p;
-    boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>* pout_values;
+    boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> *pout_values;
     string psmid,psmidfile;
     bool psm_decoy;
 
-    virtual void pre(PercolatorOutI* percolator,probability_t_pimpl* probability_p,
-                     boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values);
+    virtual void pre(PercolatorOutI *percolator,probability_t_pimpl *probability_p,
+                     boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
     virtual void svm_score(double);
     virtual void q_value();
     virtual void pep();

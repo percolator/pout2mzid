@@ -9,11 +9,11 @@
 #include "pout_parser.h"
 //------------------------------------------------------------------------------
 namespace poutXML {
-  void probability_t_pimpl::_characters(const ::xml_schema::ro_string& s) {
+  void probability_t_pimpl::_characters(const ::xml_schema::ro_string &s) {
     probability_t=s;
     }
 //------------------------------------------------------------------------------
-  void peptide_pimpl::pre(probability_t_pimpl* probability_p) {
+  void peptide_pimpl::pre(probability_t_pimpl *probability_p) {
     this->probability_p=probability_p;
     }
 //------------------------------------------------------------------------------
@@ -29,8 +29,8 @@ namespace poutXML {
     pdecoy=decoy;
     }
 //------------------------------------------------------------------------------
-  void psm_ids_pimpl::pre(PercolatorOutI* percolator,peptide_pimpl* peptide_p,
-                          boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
+  void psm_ids_pimpl::pre(PercolatorOutI *percolator,peptide_pimpl *peptide_p,
+                          boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
     this->percolator=percolator;
     this->peptide_p=peptide_p;
     this->peptide_p->pq_value="";
@@ -43,7 +43,7 @@ namespace poutXML {
     peptide_p->ppep="";
     }
 //------------------------------------------------------------------------------
-  void psm_ids_pimpl::psm_id(const ::std::string& psm_id) {
+  void psm_ids_pimpl::psm_id(const ::std::string &psm_id) {
     string psmid,psmidfile;
 
     if (!percolator->checkDecoy(peptide_p->pdecoy))
@@ -60,8 +60,8 @@ namespace poutXML {
       (*pout_values)[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::PEPTIDE_Q_VALUE)]=peptide_p->pq_value;
     }
 //------------------------------------------------------------------------------
-  void psm_pimpl::pre(PercolatorOutI* percolator,probability_t_pimpl* probability_p,
-                      boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures>& pout_values) {
+  void psm_pimpl::pre(PercolatorOutI *percolator,probability_t_pimpl *probability_p,
+                      boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
     this->percolator=percolator;
     this->probability_p=probability_p;
     this->pout_values=&pout_values;
@@ -87,7 +87,7 @@ namespace poutXML {
       (*pout_values)[PercolatorOutFeatures(psmidfile,psmid,PERCOLATOR_PARAM::P_VALUE)]=probability_p->probability_t;
     }
 //------------------------------------------------------------------------------
-  void psm_pimpl::psm_id(const ::std::string& psm_id) {
+  void psm_pimpl::psm_id(const ::std::string &psm_id) {
     psmid=percolator->convertPSMID(psm_id);
     if (psmid.length()==0)
       THROW_ERROR_VALUE(PRINT_TEXT::WRONG_FORMAT_PSM,psm_id);
