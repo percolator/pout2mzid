@@ -67,6 +67,7 @@ namespace PRINT_TEXT {
   const char MZID_FILE_NOT_ENTERED[]="mzIdentML file has not been defined";
   const char NO_PERCOLATOR_FILE[]="Percolator XML file %s does not exist";
   const char NO_MZID_FILE[]="mzIdentML file %s does not exist";
+  const char NO_FILE_ENDING[]="File ending has not been set";
   const char MZIDOUTPUTDIR_NOT_CREATED[]="Outputdirectory did not exist, and could not be created";
   const char MZIDINPUTDIR_NOT_FOUND[]="Input direcotory for mzIdentML file(s) does not exist";
   const char CANNOT_LOAD[]="Cannot load file %s";

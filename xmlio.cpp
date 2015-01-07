@@ -65,6 +65,10 @@ void MzIDIO::setOutputFileEnding(string fileending) {
   }
 //------------------------------------------------------------------------------
 bool MzIDIO::setOutputDirectory(string outputdir) {
+  if (outputfileending.length()==0) {
+    cerr << boost::format(PRINT_TEXT::NO_FILE_ENDING) << endl;
+    return false;
+    }
   this->outputdir=outputdir;
   if (!boost::filesystem::is_directory(outputdir.c_str()))
     return boost::filesystem::create_directory(outputdir.c_str());

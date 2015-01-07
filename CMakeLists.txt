@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(POUT2MZIML_VERSION_MAJOR "0")
 set(POUT2MZIML_VERSION_MINOR "3")
-set(POUT2MZIML_VERSION_PATCH "2")
+set(POUT2MZIML_VERSION_PATCH "3")
 
 configure_file( version_config.h.in ${CMAKE_BINARY_DIR}/version_config.h )
 
