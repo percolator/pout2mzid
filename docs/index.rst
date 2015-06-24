@@ -47,24 +47,24 @@ will change all values within the software.
 Options
 =======
 
--h [ --help ]                   Displays available commands
--p [ --percolatorfile ] [Value] Percolator Out XML result file
--m [ --mzidfile ] [Value]       MzIdentML input file
--i [ --inputdir ] [Value]       Sets the mzIdentML input directory. All 
-                                mzIdentML inputfiles must be in that 
-                                directory
--c [ --changeoutput ] [Value]   Change the outputfile to original 
-                                filename+[Value]+.mzid.
-                                DEFAULT: output to stdout
--o [ --outputdir ] [Value]      Sets the output directory if none exist, it 
-                                will be created.
--f [ --filesmzid ] [Value]      File containing a list of mzIdentML filenames
--d [ --decoy ]                  Only adds results to entries with decoy set 
-                                to true. DEFAULT: false
--v [ --validate ]               Sets that validation of XML schema should not
-                                be performed. Faster parsing.
--w [ --warning ]                Sets that upon warning the software should 
-                                terminate.
+:-h [ --help ]: Displays available commands
+:-p [ --percolatorfile ] [Value]: Percolator Out XML result file
+:-m [ --mzidfile ] [Value]: MzIdentML input file
+:-i [ --inputdir ] [Value]: Sets the mzIdentML input directory. All 
+  mzIdentML inputfiles must be in that 
+  directory
+:-c [ --changeoutput ] [Value]: Change the outputfile to original 
+  filename+[Value]+.mzid.
+  DEFAULT: output to stdout
+:-o [ --outputdir ] [Value]: Sets the output directory if none exist, it 
+  will be created.
+:-f [ --filesmzid ] [Value]: File containing a list of mzIdentML filenames
+:-d [ --decoy ]: Only adds results to entries with decoy set 
+  to true. DEFAULT: false
+:-v [ --validate ]: Sets that validation of XML schema should not
+  be performed. Faster parsing.
+:-w [ --warning ]: Sets that upon warning the software should 
+  terminate.
 
 Options are also avialable with the command *pout2mzid -h*
 
