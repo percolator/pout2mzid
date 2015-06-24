@@ -8,32 +8,4 @@ Decoy status flag filters the data.
 This version also acts as a stream parser, meaning the XML files will not
 be stored in memory, but rather stream from/to XML files.
 
-***
-
-BUILDING (from source bundle)
-
-*** READ THIS CAREFULLY: you MUST install the required libraries! ***
-The following instructions are for Ubuntu (versions 10.04+).
-
-DEPENDENCIES
-C++ compiler
-CMake
-CodeSynthesis XSD
-Xerces C++
-Boost
-
-In order to build just run...
-cd [binary dir]
-cmake [binary dir]/CMakeLists.txt
-make
-
-***
-
-FILES
-
-XMLIO.h file contains constants for all XML path, values and attributes
-that are used within the software.
-For future upgrade or XML format change, these constants can be changed, which
-will change all values within the software.
-
-See pout2mzid -h for more information about [OPTIONS]
+More information can be found in the docs directory
