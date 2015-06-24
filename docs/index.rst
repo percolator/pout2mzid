@@ -13,14 +13,14 @@ be stored in memory, but rather stream from/to XML files.
 Building (from source bundle)
 =============================
 
-***READ THIS CAREFULLY**
+**READ THIS CAREFULLY**
 you MUST install the required libraries!
 The following instructions are for Ubuntu (versions 10.04+).
 
 Dependencies
 ------------
 
-C++ compiler
+:C++ compiler: Works well with the GNU compiler
 :CMake: version 2.8.7
 :CodeSynthesis XSD: version 3.3.0+
   (Supports percolator XSD version 1.5)
@@ -47,25 +47,24 @@ will change all values within the software.
 Options
 =======
 
-:-h [ --help ]: Displays available commands
-:-p [ --percolatorfile ] [Value]: Percolator Out XML result file
-:-m [ --mzidfile ] [Value]: MzIdentML input file
-:-i [ --inputdir ] [Value]: Sets the mzIdentML input directory. All 
-  mzIdentML inputfiles must be in that 
-  directory
-:-c [ --changeoutput ] [Value]: Change the outputfile to original 
-  filename+[Value]+.mzid.
-  DEFAULT: output to stdout
-                                  
-:-o [ --outputdir ] [Value]: Sets the output directory if none exist, it 
-  will be created.
-:-f [ --filesmzid ] [Value]: File containing a list of mzIdentML filenames
-:-d [ --decoy ]: Only adds results to entries with decoy set 
-  to true. DEFAULT: false
-:-v [ --validate ]: Sets that validation of XML schema should not
-  be performed. Faster parsing.
-:-w [ --warning ]: Sets that upon warning the software should 
-  terminate.
+-h [ --help ]                   Displays available commands
+-p [ --percolatorfile ] [Value] Percolator Out XML result file
+-m [ --mzidfile ] [Value]       MzIdentML input file
+-i [ --inputdir ] [Value]       Sets the mzIdentML input directory. All 
+                                mzIdentML inputfiles must be in that 
+                                directory
+-c [ --changeoutput ] [Value]   Change the outputfile to original 
+                                filename+[Value]+.mzid.
+                                DEFAULT: output to stdout
+-o [ --outputdir ] [Value]      Sets the output directory if none exist, it 
+                                will be created.
+-f [ --filesmzid ] [Value]      File containing a list of mzIdentML filenames
+-d [ --decoy ]                  Only adds results to entries with decoy set 
+                                to true. DEFAULT: false
+-v [ --validate ]               Sets that validation of XML schema should not
+                                be performed. Faster parsing.
+-w [ --warning ]                Sets that upon warning the software should 
+                                terminate.
 
 Options are also avialable with the command *pout2mzid -h*
 
