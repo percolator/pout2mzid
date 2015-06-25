@@ -17,6 +17,7 @@
 
 #include "version_config.h"
 #include "xmlio.h"
+#include "global.h"
 #include "pout_parser.h"
 #include "boost/program_options.hpp"
 
@@ -24,10 +25,8 @@
 namespace prgm_opt=boost::program_options;
 PercolatorOutI percolator;
 MzIDIO mzid;
-boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values;
 //------------------------------------------------------------------------------
 void CleanUp(bool exitvalue) {
-  pout_values.clear();
   xercesc::XMLPlatformUtils::Terminate();
   exit(exitvalue);
   }
@@ -45,7 +44,6 @@ int main(int argc, char **argv) {
       (CMDOPTIONS::INPUTDIR_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::INPUTDIR_OPTION[2])
       (CMDOPTIONS::MZIDOUTPUT_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDOUTPUT_OPTION[2])
       (CMDOPTIONS::OUTPUTDIR_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::OUTPUTDIR_OPTION[2])
-      (CMDOPTIONS::MZIDFILES_OPTION[0],prgm_opt::value<string>()->required(),CMDOPTIONS::MZIDFILES_OPTION[2])
       (CMDOPTIONS::DECOY_OPTION[0],CMDOPTIONS::DECOY_OPTION[2])
       (CMDOPTIONS::VALIDATION_OPTION[0],CMDOPTIONS::VALIDATION_OPTION[2])
       (CMDOPTIONS::WARNING_OPTION[0],CMDOPTIONS::WARNING_OPTION[2]);
@@ -61,10 +59,12 @@ int main(int argc, char **argv) {
       percolator.unsetValidation();
       mzid.unsetValidation();
       }
+    if (option_map.count(CMDOPTIONS::WARNING_OPTION[1]))
+       percolator.unsetWarningFlag();
     if (option_map.count(CMDOPTIONS::MZIDOUTPUT_OPTION[1]))
       mzid.setOutputFileEnding(option_map[CMDOPTIONS::MZIDOUTPUT_OPTION[1]].as<string>());
     if (option_map.count(CMDOPTIONS::INPUTDIR_OPTION[1]))
-      if (!mzid.setInputDirectory(option_map[CMDOPTIONS::INPUTDIR_OPTION[1]].as<string>()))
+      if (!percolator.setInputDirectory(option_map[CMDOPTIONS::INPUTDIR_OPTION[1]].as<string>()))
         THROW_ERROR(PRINT_TEXT::MZIDINPUTDIR_NOT_FOUND);
     if (option_map.count(CMDOPTIONS::OUTPUTDIR_OPTION[1]))
       if (!mzid.setOutputDirectory(option_map[CMDOPTIONS::OUTPUTDIR_OPTION[1]].as<string>()))
@@ -72,22 +72,17 @@ int main(int argc, char **argv) {
     if (option_map.count(CMDOPTIONS::PERCOLATORFILE_OPTION[1]))
       if (!percolator.setFilename(option_map[CMDOPTIONS::PERCOLATORFILE_OPTION[1]].as<string>()))
         THROW_ERROR_VALUE(PRINT_TEXT::NO_PERCOLATOR_FILE,option_map[CMDOPTIONS::PERCOLATORFILE_OPTION[1]].as<string>());
-    if (option_map.count(CMDOPTIONS::MZIDFILE_OPTION[1]))
-      mzid.setFilename(option_map[CMDOPTIONS::MZIDFILE_OPTION[1]].as<string>());
-    if (option_map.count(CMDOPTIONS::MZIDFILES_OPTION[1]))
-      if (!mzid.addFilenames(option_map[CMDOPTIONS::MZIDFILES_OPTION[1]].as<string>()))
-        THROW_ERROR_VALUE(PRINT_TEXT::NO_MZID_FILE,option_map[CMDOPTIONS::MZIDFILES_OPTION[1]].as<string>());
-    if (option_map.count(CMDOPTIONS::WARNING_OPTION[1]))
-       mzid.unsetWarningFlag();
-    if (!mzid.checkFilenames())
-      CleanUp(EXIT_FAILURE);
+    if (option_map.count(CMDOPTIONS::MZIDFILE_OPTION[1])) {
+      percolator.multiplemzidfiles=false;
+      if (!percolator.addFilenames(option_map[CMDOPTIONS::MZIDFILE_OPTION[1]].as<string>(),false))
+        THROW_ERROR("");
+      }
     if (percolator.noFilename())
       THROW_ERROR(PRINT_TEXT::PERCOLATOR_FILE_NOT_ENTERED);
     xercesc::XMLPlatformUtils::Initialize();
-    percolator.setFirstMzIDFilename(mzid.getFirstFilename());
-    if (!percolator.getPoutValues(pout_values))
+    if (!percolator.getPoutValues())
       THROW_ERROR(PRINT_TEXT::CANNOT_LOAD_PERCOLATOR_FILE);
-    if (!mzid.insertMZIDValues(pout_values))
+    if (!mzid.insertMZIDValues(percolator.pout_values,percolator.mzidfilenames,percolator.multiplemzidfiles))
       THROW_ERROR(PRINT_TEXT::CANNOT_INSERT);
     CleanUp(EXIT_SUCCESS);
     }

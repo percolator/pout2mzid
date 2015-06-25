@@ -49,10 +49,10 @@ namespace global {
 namespace CMDOPTIONS {
   const char *const HELP_OPTION[]={"help,h","help","Displays available commands\n"};
   const char *const PERCOLATORFILE_OPTION[]={"percolatorfile,p","percolatorfile","Percolator Out XML result file\n"};
-  const char *const MZIDFILE_OPTION[]={"mzidfile,m","mzidfile","MzIdentML input file\n"};
+  const char *const MZIDFILE_OPTION[]={"mzidfile,m","mzidfile",
+    "MzIdentML input file. This is only used when you have a single MZID file, and MZID filenames are not entered within the percolator out file.\n"};
   const char *const MZIDOUTPUT_OPTION[]={"changeoutput,c","changeoutput","Change the outputfile to original filename+[Value]+.mzid.\n"
-                                          "DEFAULT: output to stdout\n"};
-  const char *const MZIDFILES_OPTION[]={"filesmzid,f","filesmzid","File containing a list of mzIdentML filenames\n"};
+    "DEFAULT: output to stdout\n"};
   const char *const DECOY_OPTION[]={"decoy,d","decoy","Only adds results to entries with decoy set to true. DEFAULT: false\n"};
   const char *const VALIDATION_OPTION[]={"validate,v","validate","Sets that validation of XML schema should not be performed. Faster parsing.\n"};
   const char *const WARNING_OPTION[]={"warning,w","warning","Sets that upon warning the software should terminate.\n"};
@@ -75,7 +75,8 @@ namespace PRINT_TEXT {
   const char BAD_PATH[]="Bad path in file %s";
   const char NO_ELEMENT_PERCOLATOR[]="Element %s in percolator_out file not found";
   const char WRONG_FORMAT_PSM[]="Psm ID %s in percolator out file has the wrong format";
-  const char NO_UNIQUE_MZID_FILE[]="Percolator out file does not contain MzID file ID, on mutiple MzID files";
+  const char MULTIPLE_MZID_FILES[]="A single MZID file was entered but percolator out file contains MZID file information";
+  const char NO_UNIQUE_MZID_FILE[]="No information about MZID files was found in percolator out file";
   const char CANNOT_INSERT[]="Cannot insert new percolator out values into mzIdentML file";
   const char BAD_XML[]="Badly formed XML structure in %s mzIdentML file";
   const char CANNOT_SAVE[]="Cannot save mzIdentML file";

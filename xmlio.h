@@ -41,6 +41,7 @@ using namespace std;
 namespace MZID_PARAM {
   const char SCHEMA_NAME[]="http://psidev.info/psi/pi/mzIdentML/1.1";
   const char SCHEMA[]="mzIdentML1.1.0.xsd";
+  const char FILE_EXTENSION[]=".mzid";
   const char START_INSERT_TAG[]="<SpectrumIdentificationItem ";
   const char END_INSERT_TAG[]="</SpectrumIdentificationItem>";
   const char PSMID_TAG[]=" id=\"";
@@ -53,10 +54,10 @@ namespace MZID_PARAM {
       USERPARAM,USERPARAM,USERPARAM,USERPARAM,USERPARAM,USERPARAM
       };
     const string ACCESSIONS[]={
-      "","MS:1002054","MS:1002056","MS:1002055","",""
+      "","","MS:1002054","MS:1002056","MS:1002055",""
       };
     const string CVREFS[]={
-      "","PSI-PI","PSI-PI","PSI-PI","",""
+      "","","PSI-PI","PSI-PI","PSI-PI",""
       };
     const string NAMES[]={
       "percolator:score","percolator:psm_p_value","percolator:psm_q_value","percolator:psm_pep","percolator:peptide_q_value","percolator:peptide_pep"
@@ -74,61 +75,61 @@ namespace PERCOLATOR_PARAM {
 //------------------------------------------------------------------------------
 class PercolatorOutFeatures {
   public:
-  string filename;
-  string psmid;
-  int parameter;
+    string filename;
+    string psmid;
+    int parameter;
 
-  PercolatorOutFeatures();
-  PercolatorOutFeatures(string filename, string psmid, int parameter);
-  bool operator==(PercolatorOutFeatures const &p) const;
-  size_t operator()(PercolatorOutFeatures const &p) const;
+    PercolatorOutFeatures();
+    PercolatorOutFeatures(string filename, string psmid, int parameter);
+    bool operator==(PercolatorOutFeatures const &p) const;
+    size_t operator()(PercolatorOutFeatures const &p) const;
   };
 //------------------------------------------------------------------------------
 class XMLIO {
   protected:
-  long validatexml;
+    long validatexml;
 
   public:
-  XMLIO();
-  void unsetValidation();
+    XMLIO();
+    void unsetValidation();
   };
 //------------------------------------------------------------------------------
 class MzIDIO : public XMLIO {
   private:
-  vector<string> filename;
-  string outputfileending,outputdir,inputdir;
-  bool warning;
+    string outputfileending,outputdir;
 
   public:
-  MzIDIO();
-  void setOutputFileEnding(string fileending);
-  bool setOutputDirectory(string outputdir);
-  bool setInputDirectory(string inputdir);
-  void unsetWarningFlag();
-  void setFilename(string filename);
-  bool addFilenames(string filenamefile);
-  bool checkFilenames();
-  string getFirstFilename();
-  string setOutputFileName(int mzidfilenameid);
-  bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
-  ~MzIDIO();
+    MzIDIO();
+    void setOutputFileEnding(string fileending);
+    bool setOutputDirectory(string outputdir);
+    string setOutputFileName(string filename);
+    bool insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values,
+                          vector <string> &filenames, bool multiplemzidfiles);
   };
 //------------------------------------------------------------------------------
 class PercolatorOutI : public XMLIO {
   private:
-  string filename,firstmzidfilename;
-  bool decoy;
+    string filename,inputdir;
+    bool decoy;
+    bool warning;
 
   public:
-  PercolatorOutI();
-  bool setFilename(string filename);
-  void setFirstMzIDFilename(string filename);
-  bool noFilename();
-  void setDecoy();
-  bool checkDecoy(bool decoy);
-  bool getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values);
-  string convertPSMIDFileName(string percolatorid);
-  static string convertPSMID(string percolatorid);
+    bool multiplemzidfiles;
+    boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> pout_values;
+    vector<string> mzidfilenames;
+
+    PercolatorOutI();
+    bool setFilename(string filename);
+    bool noFilename();
+    bool setInputDirectory(string inputdir);
+    bool addFilenames(string filename, bool addextension);
+    void unsetWarningFlag();
+    void setDecoy();
+    bool checkDecoy(bool decoy);
+    bool getPoutValues();
+    string convertPSMIDFileName(string percolatorid);
+    static string convertPSMID(string percolatorid);
+    ~PercolatorOutI();
   };
 //------------------------------------------------------------------------------
 #endif // XMLIO_H

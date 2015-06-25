@@ -56,8 +56,6 @@ void XMLIO::unsetValidation() {
 MzIDIO::MzIDIO() {
   outputfileending="";
   outputdir="";
-  inputdir="";
-  warning=true;
   }
 //------------------------------------------------------------------------------
 void MzIDIO::setOutputFileEnding(string fileending) {
@@ -75,65 +73,15 @@ bool MzIDIO::setOutputDirectory(string outputdir) {
   return true;
   }
 //------------------------------------------------------------------------------
-bool MzIDIO::setInputDirectory(string inputdir) {
-  this->inputdir=inputdir;
-  return boost::filesystem::is_directory(inputdir.c_str());
-  }
-//------------------------------------------------------------------------------
-void MzIDIO::unsetWarningFlag() {
-  warning=false;
-  }
-//------------------------------------------------------------------------------
-void MzIDIO::setFilename(string filename) {
-  this->filename.push_back(filename);
-  }
-//------------------------------------------------------------------------------
-bool MzIDIO::addFilenames(string filenamefile) {
-  ifstream fp1;
-  string s1;
-
-  if (!boost::filesystem::exists(filenamefile.c_str()))
-    return false;
-  fp1.open(filenamefile.c_str(),ifstream::in);
-  while (!fp1.eof()) {
-    getline(fp1,s1);
-    if (s1.length()==0)
-      continue;
-    setFilename(s1);
-    }
-  fp1.close();
-  return true;
-  }
-//------------------------------------------------------------------------------
-bool MzIDIO::checkFilenames() {
-  int i1;
-  bool b1;
-
-  b1=true;
-  for (i1=0; i1<filename.size(); i1++) {
-    if (inputdir.length()>0)
-      filename[i1]=(boost::lexical_cast<boost::filesystem::path>(inputdir)/
-      (boost::lexical_cast<boost::filesystem::path>(filename[i1])).filename()).string();
-    if (!boost::filesystem::exists(filename[i1])) {
-      cerr << boost::format(PRINT_TEXT::NO_MZID_FILE) % filename[i1] << endl;
-      b1=false;
-      }
-    }
-  return b1 || warning;
-  }
-//------------------------------------------------------------------------------
-string MzIDIO::getFirstFilename() {
-  return filename[0];
-  }
-//------------------------------------------------------------------------------
-string MzIDIO::setOutputFileName(int mzidfilenameid) {
-  boost::filesystem::path filepath(filename[mzidfilenameid]);
+string MzIDIO::setOutputFileName(string filename) {
+  boost::filesystem::path filepath(filename);
   if (outputdir.length()>0)
     filepath=boost::lexical_cast<boost::filesystem::path>(outputdir)/filepath.filename();
   return filepath.replace_extension("").string()+outputfileending+filepath.extension().string();
   }
 //------------------------------------------------------------------------------
-bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
+bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values,
+                              vector <string> &filenames, bool multiplemzidfiles) {
   ifstream fpr;
   ofstream fpw;
   ostream *wout;
@@ -143,11 +91,13 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
   n=0;
   psmid="";
   try {
-    for (vi1=0; vi1<filename.size(); vi1++) {
-      mzidname=boost::lexical_cast<boost::filesystem::path>(filename[vi1]).stem().string();
-      fpr.open(filename[vi1].c_str());
+    for (vi1=0; vi1<filenames.size(); vi1++) {
+      mzidname=boost::lexical_cast<boost::filesystem::path>(filenames[vi1]).stem().string();
+      if (!multiplemzidfiles)
+        mzidname="";
+      fpr.open(filenames[vi1].c_str());
       if (outputfileending.length()>0) {
-        fpw.open(setOutputFileName(vi1).c_str());
+        fpw.open(setOutputFileName(filenames[vi1]).c_str());
         wout=&fpw;
         }
       else
@@ -155,7 +105,7 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
       while (getline(fpr,s1)) {
         if (s1.find(MZID_PARAM::END_INSERT_TAG)!=string::npos) {
           if (psmid.length()==0)
-            THROW_ERROR_VALUE(PRINT_TEXT::BAD_XML,filename[vi1]);
+            THROW_ERROR_VALUE(PRINT_TEXT::BAD_XML,filenames[vi1]);
           for (i1=0; i1<ARRAYSIZE(MZID_PARAM::ELEMENT_DATA::ELEMENTS); i1++) {
             if (pout_values.find(PercolatorOutFeatures(mzidname,psmid,i1))==pout_values.end())
               continue;
@@ -204,14 +154,12 @@ bool MzIDIO::insertMZIDValues(boost::unordered_map<PercolatorOutFeatures, string
     }
   }
 //------------------------------------------------------------------------------
-MzIDIO::~MzIDIO() {
-  filename.clear();
-  }
-//------------------------------------------------------------------------------
 PercolatorOutI::PercolatorOutI() {
   filename="";
-  firstmzidfilename="";
   decoy=false;
+  multiplemzidfiles=true;
+  inputdir="";
+  warning=true;
   }
 //------------------------------------------------------------------------------
 bool PercolatorOutI::setFilename(string filename) {
@@ -219,12 +167,35 @@ bool PercolatorOutI::setFilename(string filename) {
   return boost::filesystem::exists(filename.c_str());
   }
 //------------------------------------------------------------------------------
-void PercolatorOutI::setFirstMzIDFilename(string filename) {
-  firstmzidfilename=filename;
-  }
-//------------------------------------------------------------------------------
 bool PercolatorOutI::noFilename() {
   return filename.length()==0;
+  }
+//------------------------------------------------------------------------------
+bool PercolatorOutI::setInputDirectory(string inputdir) {
+  this->inputdir=inputdir;
+  return boost::filesystem::is_directory(inputdir.c_str());
+  }
+//------------------------------------------------------------------------------
+bool PercolatorOutI::addFilenames(string filename, bool addextension) {
+  string filename2;
+
+  filename2=filename;
+  if (addextension)
+    filename2+=MZID_PARAM::FILE_EXTENSION;
+  if (inputdir.length()>0)
+    filename2=(boost::lexical_cast<boost::filesystem::path>(inputdir)/
+      (boost::lexical_cast<boost::filesystem::path>(filename)).filename()).string();
+  if (!boost::filesystem::exists(filename2.c_str())) {
+    cerr << boost::format(PRINT_TEXT::NO_MZID_FILE) % filename2 << endl;
+    return warning;
+    }
+  if(find(this->mzidfilenames.begin(),this->mzidfilenames.end(),filename2)==this->mzidfilenames.end())
+    this->mzidfilenames.push_back(filename2);
+  return true;
+  }
+//------------------------------------------------------------------------------
+void PercolatorOutI::unsetWarningFlag() {
+  warning=false;
   }
 //------------------------------------------------------------------------------
 void PercolatorOutI::setDecoy() {
@@ -235,7 +206,7 @@ bool PercolatorOutI::checkDecoy(bool decoy) {
   return this->decoy==decoy;
   }
 //------------------------------------------------------------------------------
-bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, string, PercolatorOutFeatures> &pout_values) {
+bool PercolatorOutI::getPoutValues() {
   poutXML::psms_pskel psms_p;
   poutXML::peptides_pskel peptides_p;
   poutXML::proteins_pskel proteins_p;
@@ -254,8 +225,8 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
   poutXML::probability_t_pimpl probability_t_p;
 
   try {
-    psm_p.pre(this,&probability_t_p,pout_values);
-    psm_ids_p.pre(this,&peptide_p,pout_values);
+    psm_p.pre(this,&probability_t_p);
+    psm_ids_p.pre(this,&peptide_p);
     peptide_p.pre(&probability_t_p);
     pout_p.parsers (process_info_p,psms_p,peptides_p,proteins_p,
                     string_p,u_short_p,u_short_p);
@@ -278,14 +249,13 @@ bool PercolatorOutI::getPoutValues(boost::unordered_map<PercolatorOutFeatures, s
   }
 //------------------------------------------------------------------------------
 string PercolatorOutI::convertPSMIDFileName(string percolatorid) {
-  string psmidfile;
   int i1;
 
-  psmidfile=boost::lexical_cast<boost::filesystem::path>(firstmzidfilename).stem().string();
   i1=percolatorid.find(PERCOLATOR_PARAM::PSMID_START);
   if (i1!=string::npos)
-    psmidfile=percolatorid.substr(0,i1);
-  return psmidfile;
+    return percolatorid.substr(0,i1);
+  else
+    return "";
   }
 //------------------------------------------------------------------------------
 string PercolatorOutI::convertPSMID(string percolatorid) {
@@ -296,5 +266,10 @@ string PercolatorOutI::convertPSMID(string percolatorid) {
     if ((i2=percolatorid.find('_',i2+1))==string::npos)
       return "";
   return percolatorid.substr(i3+1,i2-i3-1);
+  }
+//------------------------------------------------------------------------------
+PercolatorOutI::~PercolatorOutI() {
+  mzidfilenames.clear();
+  pout_values.clear();
   }
 //------------------------------------------------------------------------------

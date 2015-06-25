@@ -49,16 +49,21 @@ Options
 
 :-h [ --help ]: Displays available commands
 :-p [ --percolatorfile ] [Value]: Percolator Out XML result file
-:-m [ --mzidfile ] [Value]: MzIdentML input file
+:-m [ --mzidfile ] [Value]: MzIdentML input file.
+  This is only used when you have a single MZID file, and
+  MZID filenames are not entered within the percolator out file.
+  The software is capable of detecting the format of the file.
 :-i [ --inputdir ] [Value]: Sets the mzIdentML input directory. All 
   mzIdentML inputfiles must be in that 
-  directory
+  directory. If this option is omitted all input files should reside
+  in the current directory. 
 :-c [ --changeoutput ] [Value]: Change the outputfile to original 
   filename+[Value]+.mzid.
   DEFAULT: output to stdout
-:-o [ --outputdir ] [Value]: Sets the output directory if none exist, it 
+:-o [ --outputdir ] [Value]: Sets the output directory if it does not exist, it 
   will be created.
-:-f [ --filesmzid ] [Value]: File containing a list of mzIdentML filenames
+  If this option is omitted outputfiles will reside in the same directory
+  as the input files.
 :-d [ --decoy ]: Only adds results to entries with decoy set 
   to true. DEFAULT: false
 :-v [ --validate ]: Sets that validation of XML schema should not
@@ -79,19 +84,19 @@ Percolator OUT files
 In percolator out files *pout2mzid* searches for entries like::
 
   <psms>
-    <psm p:psm_id="MZIDFILENAME_SII_XXXX_Y_SOMETHING">
+    <psm p:psm_id="OPTIONALMZIDFILENAME_SII_XXXX_Y_SOMETHING">
   </psms>
   ...
   <peptide>
-    <psm_id>MZIDFILENAME_SII_XXXX_Y_SOMETHING</psm_id>
+    <psm_id>OPTIONALMZIDFILENAME_SII_XXXX_Y_SOMETHING</psm_id>
   </peptide>  
 
-In short, the software searches for occurrence of *_SII* and stores
+In short, the software searches for occurrence of *SII* and stores
 as PSMID up until 3 underlines or up until the end of the line.
 In the example it finds SII_XXXX_Y as the PSMID.
 
 pout2mzid is also capable to take one percolator out file and add this information to
-multiple MZID files. The name of the MZID files should be entered prior of the psm id (see MZIDFILENAME above)
+multiple MZID files. The name of the MZID files should be entered prior of the psm id (see OPTIONALMZIDFILENAME above)
 but without the filename extension.
 
 The information that is retreived from this file and the entered into the MZID file is...
