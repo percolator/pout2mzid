@@ -1,6 +1,7 @@
 #ifndef VERSION_CONFIG_H
 #define VERSION_CONFIG_H
 
+#include <iostream>
 #include <stdio.h>
 #include <boost/format.hpp>
 
